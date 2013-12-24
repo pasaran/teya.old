@@ -3,8 +3,6 @@
 
 ## Icon
 
-### HTML
-
 ```html
 <span class="glyphicon glyphicon-star"></span>
 ```
@@ -20,8 +18,6 @@
 
 
 ## Dropdown
-
-### HTML
 
 ```html
 <div class="dropdown">
@@ -93,9 +89,8 @@
             divider
             item link "Separated link"
 
-## Button group
 
-### HTML
+## Button group
 
 ```html
 <div class="btn-group">
@@ -120,8 +115,6 @@
 
 ## Badges
 
-### HTML
-
 ```html
 <a href="#">Inbox <span class="badge">42</span></a>
 ```
@@ -139,8 +132,6 @@
 
 
 ## Pagination
-
-### HTML
 
 ```html
 <ul class="pagination">
