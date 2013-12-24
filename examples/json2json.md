@@ -10,7 +10,11 @@ external scalar int2hex( scalar )
 
 labels
     {
-        label: map .labels, label
+        //  label: map object .labels, label
+        label: [
+            for id in .labels
+                label id
+        ]
     }
 
 label ( id )
@@ -42,9 +46,9 @@ label ( id )
 labels {
     //  Говорим, что внутри `.labels` должен быть массив.
     //  FIXME: Имя переменной пересекается с именем шаблона (функции).
-    labels = ( array ) .labels
     {
-        label: labels.map label
+        label: map array .labels label
+        //  label: ( array .labels ).map label
     }
 }
 ```
