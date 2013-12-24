@@ -19,7 +19,7 @@ label ( id )
 
         count: .messagesCount
 
-        name = scalar .name;
+        name = scalar .name
         if name == 'priority_high'
             symbol: name
             name: 'Важные'
@@ -72,7 +72,7 @@ folders
                 all_folders[ .fid ] = .
                 user_folders.push folder
 
-            total_new += .new;
+            total_new += .new
 
     user_folders.sort .name
 
