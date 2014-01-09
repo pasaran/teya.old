@@ -1,68 +1,67 @@
 # Grammar
 
-    module := def*
+    module := ( def_var | def_func | def_template )+
 
-    def := var | func
+    def_var := ID "=" body
+    def_func := "func" ID args body
+    def_template := ID args? body
 
-    var := ID "=" expr
+    body := inline_expr | EOL block
 
-    func := ID+ func-args? expr
-    func-args := "(" arg ( "," arg )* ")"
-    func-arg := TYPE? ID ( "=" expr )? ( "..." )?
+    args := "(" arg ( "," arg )* ")"
+    arg := TYPE? ID ( "=" inline_expr )?
 
-    expr := if | for | with | when | object | array | pairs | items | call | xml | block | inline-expr
+    expr := if | for | with | object | array | pairs | items | template
 
-    if := "if" expr expr ( "else if" expr expr )* ( "else" expr )?
+    if := "if" inline_expr body ( "else if" inline_expr body )* ( "else" body )?
 
-    for := "for" ( expr expr | iterator "in" expr expr )
+    for := "for" ( inline_expr body | ID "in" inline_expr body )
 
-    with := "with" expr expr
+    with := "with" inline_expr body
 
-    when := "when" expr? INDENT case+ default? DEINDENT
-    when-case := expr ":" expr
-    when-default := expr
+    object := "{" body "}"
 
-    object := "{" ( expr ( "," expr )* | block ) "}"
-
-    array := "[" ( expr ( "," expr )* | block ) "]"
+    array := "[" body "]"
 
     pairs := pair ( "," pair )*
-    pair := ( ID | string ) ":" expr
+    pair := ( ID | string ) ":" body
 
-    items := expr ( "," expr )*
+    items := value ( "," value )*
 
-    call := ID call-args? expr?
-    call-args := call-arg ( "," call-arg )*
-    call-arg := arg-name ":" expr
+    value := inline_expr
 
-    xml := TAGNAME( "." ID | "#" ID )* xml-attr* expr
-    xml-attr := "@" ID expr?
+    template := ID inline_call_args? ( "->" expr )? body?
+    inline_call_args := inline_call_arg ( "," inline_call_arg )*
+    inline_call_arg := ID ":" inline_expr
+    block_call_arg := ID ":" body
 
-    block := INDENT ( expr | def )+ DEINDENT
+    block := INDENT block_call_arg* ( expr | def_var )+ DEDENT
 
-    inline-expr := inline-or
-    inline-or := inline-and ( "||" inline-or )?
-    inline-and := inline-eq ( "&&" inline-and )?
-    inline-eq := inline-rel ( ( "==" | "!=" | "===" | "!==" ) inline-rel )?
-    inline-rel := inline-add ( ( "<" | "<=" | ">" | ">=" ) inline-add )?
-    inline-add := inline-mul ( ( "+" | "-" ) inline-add )?
-    inline-mul := inline-unary ( ( "*" | "/" | "%" ) inline-mul )?
-    inline-unary := "-" inline-not | inline-not
-    inline-not := "!" inline-union | inline-union
-    inline-union := inline-primary ( "|" inline-union )?
+    inline_expr := inline_or
+    inline_or := inline_and ( "||" inline_or )?
+    inline_and := inline_eq ( "&&" inline_and )?
+    inline_eq := inline_rel ( ( "==" | "!=" | "===" | "!==" ) inline_rel )?
+    inline_rel := inline_add ( ( "<" | "<=" | ">" | ">=" ) inline_add )?
+    inline_add := inline_mul ( ( "+" | "-" ) inline_add )?
+    inline_mul := inline_unary ( ( "*" | "/" | "%" ) inline_mul )?
+    inline_unary := "-" inline_not | inline_not
+    inline_not := "!" inline_union | inline_union
+    inline_union := inline_primary ( "|" inline_union )?
 
-    inline-primary := number | string | subexpr | jpath | "true" | "false" | "null" | inline-var | "..."
+    inline_primary := number | string | inline_subexpr | jpath | "true" | "false" | "null" | var | func
 
-    subexpr := "(" expr ")"
+    inline_subexpr := "(" inline_expr ")"
 
-    inline-var := ID
+    var := ID
 
-    jpath := ( "/" )? jpath-step+
-    jpath-step := ( jpath-nametest | jpath-predicate )+
-    jpath-nameteset := "." ( ID | "*" )
-    jpath-predicate := "[" expr "]"
+    func := ID "(" ( expr ( "," expr )* )? ")" ( "->" expr )
 
-    string := """ string-content """
+    jpath := ( "/" )? jpath_step+
+    jpath_step := ( jpath_nametest | jpath_predicate )+
+    jpath_nameteset := "." ( ID | "*" )
+    jpath_predicate := "[" inline_expr "]"
+
+    string := "'" string_content "'" | '"' string_content '"'
 
     number := NUMBER
 
