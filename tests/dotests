@@ -18,6 +18,9 @@ var Terror = require( '../lib/terror.js' );
 
 var files = get_files();
 
+var oks = 0;
+var fails = 0;
+
 for (var i = 0, l = files.length; i < l; i++) {
     var filename = files[i];
 
@@ -28,19 +31,39 @@ for (var i = 0, l = files.length; i < l; i++) {
 
         var ast = parser.match( 'module' );
 
-        console.log( filename, 'ok'.green );
+        ok( filename );
 
     } catch ( e ) {
         var error = get_error( filename );
 
         if ( error && ( e instanceof Terror ) && part_of( error, e ) ) {
-            console.log( filename, 'ok'.green );
+            ok( filename );
 
-            continue;
+        } else {
+            fail( filename );
         }
-
-        console.log( filename, 'error'.red );
     }
+}
+
+total();
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+function ok( filename ) {
+    oks++;
+
+    console.log( filename, 'ok'.green );
+}
+
+function fail( filename ) {
+    fails++;
+
+    console.log( filename, 'fail'.red );
+}
+
+function total() {
+    console.log();
+    console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
 }
 
 
