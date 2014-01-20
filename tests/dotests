@@ -1,0 +1,105 @@
+#!/usr/bin/env node
+
+// vim: set filetype=javascript:
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+var fs_ = require( 'fs' );
+var path_ = require( 'path' );
+
+require( 'no.colors' );
+
+var Parser = require( '../lib/teya-parser.js' );
+var grammar = require( '../lib/teya-grammar.js' );
+var ctors = require( '../lib/teya-ctors.js' );
+var Terror = require( '../lib/terror.js' );
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+var files = get_files();
+
+for (var i = 0, l = files.length; i < l; i++) {
+    var filename = files[i];
+
+    var parser = new Parser( grammar, ctors );
+
+    try {
+        parser.load_file( filename );
+
+        var ast = parser.match( 'module' );
+
+        console.log( filename, 'ok'.green );
+
+    } catch ( e ) {
+        var error = get_error( filename );
+
+        if ( error && ( e instanceof Terror ) && part_of( error, e ) ) {
+            console.log( filename, 'ok'.green );
+
+            continue;
+        }
+
+        console.log( filename, 'error'.red );
+    }
+}
+
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+function part_of( obj1, obj2 ) {
+    if ( !obj1 ) {
+        return obj1 === obj2;
+    }
+
+    if ( typeof obj1 === 'object' ) {
+        if ( typeof obj2 !== 'object' ) {
+            return false;
+        }
+
+        for ( var key in obj1 ) {
+            if ( !part_of( obj1[ key ], obj2[ key ] ) ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return obj1 === obj2;
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+function get_error( filename ) {
+    filename = filename.replace( /\.teya$/, '.error' );
+
+    try {
+        var error = fs_.readFileSync( filename );
+
+        return eval( '(' + error + ')' );
+    } catch ( e ) {
+        return null;
+    }
+}
+
+function get_files( dir, result ) {
+    dir = dir || '.';
+    result = result || [];
+
+    var items = fs_.readdirSync( dir ).sort();
+    for (var i = 0, l = items.length; i < l; i++) {
+        var item = path_.join( dir, items[i] );
+
+        var stat = fs_.statSync( item );
+        if ( stat.isFile() && /\.teya$/.test( item ) ) {
+            result.push( item );
+        } else if ( stat.isDirectory() ) {
+            get_files( item, result );
+        }
+    }
+
+    return result;
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+

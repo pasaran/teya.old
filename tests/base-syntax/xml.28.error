@@ -1,0 +1,10 @@
+{
+    error: {
+        id: 'UNEXPECTED_TOKEN'
+    },
+    pos: {
+        x: 8,
+        y: 1
+    }
+}
+

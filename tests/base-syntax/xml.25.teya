@@ -1,0 +1,7 @@
+page
+    A.link
+        @href = "http://www.yandex.ru"
+        @data-nb = "link"
+
+        "Yandex"
+

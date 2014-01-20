@@ -1,0 +1,3 @@
+page
+    DIV @data-nb="nb-{ .name }""Yandex"
+
