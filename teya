@@ -1,0 +1,77 @@
+#!/usr/bin/env node
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+var nopt = require( 'nopt' );
+
+var Parser = require( './lib/teya-parser.js' );
+var grammar = require( './lib/teya-grammar.js' );
+var ctors = require( './lib/teya-ctors.js' );
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+var options = get_options();
+
+if ( options.help ) {
+    help();
+
+} else if ( options.version ) {
+    version();
+
+} else {
+    var filename = options.argv.remain[ 0 ];
+
+    if ( filename && /\.teya$/.test( filename ) ) {
+        compile( filename );
+
+    } else {
+        help();
+    }
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+function get_options() {
+    var options = nopt(
+        {
+            'help': Boolean,
+            'version': Boolean,
+        },
+        {
+            'h': '--help',
+            'v': '--version',
+        }
+    );
+
+    return options;
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+function help() {
+    console.log( 'USAGE:');
+    console.log( '' );
+    console.log( '    teya --help' );
+    console.log( '    teya --version' );
+    console.log( '' );
+    console.log( '    teya filename.teya' );
+    console.log( '' );
+};
+
+function version() {
+    console.log( require( './package.json' ).version );
+}
+
+function compile( filename ) {
+    var parser = new Parser( grammar, ctors );
+    parser.load_file( filename );
+
+    var ast = parser.match( 'module' );
+
+    console.log( ast.toString() );
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+// vim: set filetype=javascript:
+

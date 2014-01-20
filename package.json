@@ -1,0 +1,33 @@
+{
+    "author": {
+        "name": "Sergey Nikitin",
+        "email": "nik.pasaran@gmail.com",
+        "url": "https://github.com/pasaran"
+    },
+    "name": "teya",
+    "description": "Template Engine. Yes, Another",
+    "version": "0.0.0",
+    "homepage": "https://github.com/pasaran/teya",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/pasaran/teya.git"
+    },
+    "dependencies": {
+        "nopt": "*",
+        "no.colors": "0.0.1",
+        "nommon": "0.0.28"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "bin": "./teya",
+    "files": [
+        "lib",
+        "teya"
+    ],
+    "license": {
+        "type": "MIT",
+        "url": "https://github.com/pasaran/teya/raw/master/LICENSE"
+    }
+}
+
