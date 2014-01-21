@@ -1,0 +1,3 @@
+page
+    DIV @class="first" DIV @class="second" "Hello"
+
