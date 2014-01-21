@@ -83,6 +83,10 @@ function compile( filename ) {
         ast.w_def();
     } );
 
+    ast.dowalk( function( ast ) {
+        ast.w_action();
+    } );
+
     console.log( ast.toString() );
 }
 
