@@ -7,6 +7,7 @@ var nopt = require( 'nopt' );
 var Parser = require( './lib/teya-parser.js' );
 var grammar = require( './lib/teya-grammar.js' );
 var ctors = require( './lib/teya-ctors.js' );
+var Scope = require( './lib/scope.js' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -67,6 +68,20 @@ function compile( filename ) {
     parser.load_file( filename );
 
     var ast = parser.match( 'module' );
+
+    //  Проставляем parent'ы и scope'ы.
+    ast.scope = new Scope();
+    ast.dowalk( function( ast, params, pkey, pvalue ) {
+        var parent = ast.parent = pvalue || null;
+
+        if ( parent ) {
+            ast.scope = ( ast.options.scope ) ? parent.scope.create() : parent.scope;
+        }
+    } );
+
+    ast.dowalk( function( ast ) {
+        ast.w_func_def();
+    } );
 
     console.log( ast.toString() );
 }
