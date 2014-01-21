@@ -80,7 +80,7 @@ function compile( filename ) {
     } );
 
     ast.dowalk( function( ast ) {
-        ast.w_func_def();
+        ast.w_def();
     } );
 
     console.log( ast.toString() );
