@@ -83,7 +83,7 @@ function compile( filename ) {
         ast.w_def();
     } );
 
-    ast.dowalk( function( ast ) {
+    ast.walkdo( function( ast ) {
         ast.w_action();
     } );
 
