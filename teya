@@ -87,6 +87,10 @@ function compile( filename ) {
         ast.w_action();
     } );
 
+    ast.dowalk( function( ast ) {
+        ast.w_validate();
+    } );
+
     console.log( ast.toString() );
 }
 
