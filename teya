@@ -91,7 +91,7 @@ function compile( filename ) {
         ast.w_validate();
     } );
 
-    console.log( ast.toString() );
+    console.log( ast.to_string( true ) );
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
