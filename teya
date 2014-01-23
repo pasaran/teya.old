@@ -7,7 +7,7 @@ var nopt = require( 'nopt' );
 var Parser = require( './lib/teya-parser.js' );
 var grammar = require( './lib/teya-grammar.js' );
 var ctors = require( './lib/teya-ctors.js' );
-var Scope = require( './lib/scope.js' );
+var Scope = require( './lib/teya-scope.js' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
