@@ -87,8 +87,14 @@ function compile( filename ) {
         ast.w_action();
     } );
 
+    /*
     ast.dowalk( function( ast ) {
         ast.w_validate();
+    } );
+    */
+
+    ast.dowalk( function( ast ) {
+        ast.w_prepare();
     } );
 
     console.log( ast.to_string( true ) );
