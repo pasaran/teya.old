@@ -2,13 +2,114 @@ def_template
     %name
         %body
 
+def_var
+    %name = %value
+
+def_func
+    func %name( %args )
+        %body
+
+def_arg
+    %.:type%name%.:default
+
+def_arg :default [ this.default ]
+     = %default
+
+def_arg :type [ this.type ]
+    %type 
+
 block
     %defs
 
     %exprs
 
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+if
+    if %condition
+        %then
+    %elses
+
+else_if
+    else if %condition
+        %body
+
+else
+    else
+        %body
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+for
+    for %selector
+        %body
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+with
+    with %selector
+        %body
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+object
+    {
+        %body
+    }
+
+pair
+    %key: %value
+
+inline_pair
+    %key: %value
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+array
+    [
+        %body
+    ]
+
+inline_item
+    %value
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
 value
     %value
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+xml
+    %name%xml_id%xml_classes %attrs
+        %content
+
+xml_class
+    .%value
+
+xml_id
+    #%value
+
+xml_attr
+    @%name = %value
+
+param_content
+    ...
+
+param_content_attrs
+    @..
+
+param_content_other
+    $..
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+subexpr
+    (
+        %body
+    )
+
+#   ---------------------------------------------------------------------------------------------------------------   #
 
 inline_string
     "%value"
@@ -19,8 +120,40 @@ string_literal
 string_expr
     { %expr }
 
+#   ---------------------------------------------------------------------------------------------------------------   #
+
 jpath
     %steps
 
 jpath_nametest
     .%name
+
+jpath_predicate
+    [ %expr ]
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_binop
+    %left %op %right
+
+inline_unop
+    %op%left
+
+inline_number
+    %value
+
+inline_var
+    %name
+
+inline_subexpr
+    ( %expr )
+
+inline_ternary
+    %condition ? %then : %else
+
+true
+    true
+
+false
+    false
+
