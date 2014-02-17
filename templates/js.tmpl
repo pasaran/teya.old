@@ -2,15 +2,18 @@ module
     function( jpath ) {
         var m0 = {};
 
-        %.:def
+        %vars
+
+        %defs
 
         module.exports = function( data, id ) {
             return m0[ id ]( data );
         };
     }
 
-def_template :def
+def_template
     //  template
 
-def_var :def
-    //  var
+def_var
+    //  %name : %get_type()
+    var %name = %value:value;
