@@ -1,0 +1,16 @@
+module
+    function( jpath ) {
+        var m0 = {};
+
+        %.:def
+
+        module.exports = function( data, id ) {
+            return m0[ id ]( data );
+        };
+    }
+
+def_template :def
+    //  template
+
+def_var :def
+    //  var
