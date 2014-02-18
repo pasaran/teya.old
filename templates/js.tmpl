@@ -2,12 +2,18 @@ module
     function( jpath ) {
         var m0 = {};
 
-        %vars
+        var %vars:list;
+
+        function init_vars( x0 ) {
+            %vars
+        }
 
         %defs
 
-        module.exports = function( data, id ) {
-            return m0[ id ]( data );
+        module.exports = function( x0, id ) {
+            init_vars( x0 );
+
+            return m0[ id ]( x0 );
         };
     }
 
@@ -15,8 +21,10 @@ def_template
     //  template
 
 def_var
-    //  %name : %get_type()
-    var %name = %value;
+    var v%vid = %value;
+
+def_var :list
+    v%vid
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -51,7 +59,7 @@ inline_string
     %value
 
 string_literal
-    %stringify()
+    "%stringify()"
 
 string_expr
     %expr
