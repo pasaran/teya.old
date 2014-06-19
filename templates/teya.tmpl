@@ -7,7 +7,7 @@ def_template
     %name %.:args
         %body
 
-def_template :args [ this.args && !this.args.is_empty() ]
+def_template :args [ ast.args && !ast.args.is_empty() ]
     ( %args )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
@@ -26,10 +26,10 @@ def_func
 def_arg
     %.:type%name%.:default
 
-def_arg :default [ this.default ]
+def_arg :default [ ast.default ]
      = %default
 
-def_arg :type [ this.type ]
+def_arg :type [ ast.type ]
     %type 
 
 #   ---------------------------------------------------------------------------------------------------------------   #

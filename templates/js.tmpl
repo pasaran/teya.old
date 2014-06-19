@@ -1,29 +1,30 @@
 module
-    function( jpath ) {
-        var m0 = {};
+    var m0 = {};
 
-        var %vars:list;
+    %vars:define
 
-        function init_vars( x0 ) {
-            %vars
-        }
-
-        %defs
-
-        module.exports = function( x0, id ) {
-            init_vars( x0 );
-
-            return m0[ id ]( x0 );
-        };
+    function init_vars( x0 ) {
+        %vars:init
     }
+
+    %defs
+
+    module.exports = function( x0, id ) {
+        init_vars( x0 );
+
+        return m0[ id ]( x0 );
+    };
+
+module_vars :define [ !ast.is_empty() ]
+    var %.:list;
 
 def_template
-    function %{name}() {
+    m0[ "%name" ] = function %{name}() {
         %body
-    }
+    };
 
-def_var
-    var %.:name = %value;
+def_var :init
+    %.:name = %value;
 
 def_var :name
     v%{vid}_%normalize_name()
@@ -40,11 +41,22 @@ block
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-if [ this.is_inline() ]
+if [ ast.is_inline() ]
     ( %condition ) ? %then : %elses
 
 else
     %body
+
+if
+    if ( %condition ) %then:if_body %elses:if_body
+
+else_if :if_body
+    else if ( %condition ) %body:if_body
+
+* :if_body
+    {
+        %body
+    }
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
