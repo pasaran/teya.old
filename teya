@@ -94,13 +94,13 @@ function compile( filename ) {
     */
 
     ast.dowalk( function( ast ) {
+        ast.w_prepare();
+
         var parent = ast.parent;
         if ( parent ) {
             ast.rid += parent.rid;
             ast.cid += parent.cid;
         }
-
-        ast.w_prepare();
     } );
 
     console.log( ast.to_string( true ) );
