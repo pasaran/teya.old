@@ -109,18 +109,21 @@ value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+xml [ ast.is_empty ]
+    <%name%attrs/>
+
 xml
-    %get_upper_name()%xml_id%xml_classes %attrs
+    <%name%attrs>
         %content
 
-xml_class
-    .%value
-
-xml_id
-    #%value
+# xml_class
+#     .%value
+#
+# xml_id
+#     #%value
 
 xml_attr
-    @%name = %value
+     %name=%value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
