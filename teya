@@ -94,6 +94,12 @@ function compile( filename ) {
     */
 
     ast.dowalk( function( ast ) {
+        var parent = ast.parent;
+        if ( parent ) {
+            ast.rid += parent.rid;
+            ast.cid += parent.cid;
+        }
+
         ast.w_prepare();
     } );
 
