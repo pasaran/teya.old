@@ -21,7 +21,7 @@ module_vars :define [ !ast.is_empty() ]
 def_template
     m0[ "%name" ] = function %{name}() {
         %body:prologue
-        %body
+        %body:output
         %body:epilogue
     };
 
@@ -55,19 +55,19 @@ block :epilogue
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-block
+block :output
     %defs
 
-    %exprs
+    %exprs:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-if
+if :output
     if ( %condition:value ) %then:if_body %elses:if_body
 
 block :if_body
     {
-        %.
+        %.:output
     }
 
 else_if :if_body
@@ -75,21 +75,21 @@ else_if :if_body
 
 else :if_body
     else {
-        %body
+        %body:output
     }
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-for
+for :output
     var items%cid = to_array( %selector:value );
     for ( var i%cid = 0, l%cid = items%{cid}.length; i%cid < l%cid; i%cid++ ) {
         var x%body.cid = items%cid[ i%cid ];
-        %body
+        %body:output
     }
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-value
+value :output
     r%rid += %value:value;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
@@ -103,7 +103,7 @@ inline_binop :value
     %left:value %op %right:value
 
 inline_unop :value
-    %op%left
+    %op%left:value
 
 inline_ternary :value
     ( %condition:value ) ? %then:value : %else:value
@@ -148,21 +148,21 @@ false :value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-object
-    %body
+object :output
+    %body:output
 
 inline_pair
     r%rid[ %key:value ] = %value:value;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-array
-    %body
+array :output
+    %body:output
 
 #   FIXME: Хочется иметь один push на все item'ы.
 #   Сейчас это невозможно сделать из-за текущей реализации шаблонов.
 #
-inline_item
+inline_item :output
     r%{rid}.push( %value:value );
 
 
