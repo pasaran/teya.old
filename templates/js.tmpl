@@ -20,17 +20,38 @@ module_vars :define [ !ast.is_empty() ]
 
 def_template
     m0[ "%name" ] = function %{name}() {
+        %body:prologue
         %body
+        %body:epilogue
     };
 
 def_var :init
-    %.:name = %value;
+    %.:name = %value:value;
 
 def_var :name
     v%{vid}_%normalize_name()
 
 def_var :list
     %.:name
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+block :prologue [ ast.get_type() === 'object' ]
+    var r%rid = {};
+
+block :prologue [ ast.get_type() === 'array' ]
+    var r%rid = [];
+
+block :prologue [ ast.get_type() === 'attr' ]
+    //  FIXME
+
+block :prologue
+    var r%rid = '';
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+block :epilogue
+    return r%rid;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -42,74 +63,99 @@ block
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 if
-    if ( %condition ) %then:if_body %elses:if_body
+    if ( %condition:value ) %then:if_body %elses:if_body
+
+block :if_body
+    {
+        %.
+    }
 
 else_if :if_body
-    else if ( %condition ) %body:if_body
+    else if ( %condition:value ) %body:if_body
 
-* :if_body
-    {
+else :if_body
+    else {
         %body
     }
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 value
-    %value
+    r%rid += %value:value;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-jpath
+jpath :value
     no.jpath( "%teya()", x0 )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-inline_binop
-    %left %op %right
+inline_binop :value
+    %left:value %op %right:value
 
-inline_unop
+inline_unop :value
     %op%left
 
-inline_ternary
-    ( %condition ) ? %then : %else
+inline_ternary :value
+    ( %condition:value ) ? %then:value : %else:value
 
-inline_number
+inline_number :value
     %value
 
-inline_subexpr
-    ( %expr )
+inline_subexpr :value
+    ( %expr:value )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-inline_string
-    %value
+inline_string :value
+    %value:value
 
-string_literal
+string_literal :value
     "%stringify()"
 
-string_expr
-    %expr
+string_expr :value
+    %expr:value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-inline_var
+inline_var :value
     %name
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-inline_func
+inline_func :value
     %name( %args )
 
 inline_func_arg
-    %value
+    %value:value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-true
+true :value
     true
 
-false
+false :value
     false
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+object
+    %body
+
+inline_pair
+    r%rid[ %key:value ] = %value:value;
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+array
+    %body
+
+#   FIXME: Хочется иметь один push на все item'ы.
+#   Сейчас это невозможно сделать из-за текущей реализации шаблонов.
+#
+inline_item
+    r%{rid}.push( %value:value );
+
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
