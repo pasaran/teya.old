@@ -4,7 +4,7 @@ module
     %vars:define
 
     function init_vars( x0 ) {
-        %vars:init
+        %vars:def
     }
 
     %defs
@@ -25,7 +25,7 @@ def_template
         %body:epilogue
     };
 
-def_var :init
+def_var :def
     %.:name = %value:value;
 
 def_var :name
@@ -56,7 +56,7 @@ block :epilogue
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 block :output
-    %defs
+    %defs:def
 
     %exprs:output
 
@@ -89,8 +89,11 @@ for :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+value :value
+    %value:value
+
 value :output
-    r%rid += %value:value;
+    r%rid += %value:cast
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -98,6 +101,9 @@ jpath :value
     no.jpath( "%teya()", x%cid )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_binop :cast
+    %left:cast %op %right:cast
 
 inline_binop :value
     %left:value %op %right:value
@@ -116,19 +122,25 @@ inline_subexpr :value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+inline_string :cast
+    %value:cast
+
 inline_string :value
-    %value:value
+    %value:cast
 
 string_literal :value
     "%stringify()"
 
 string_expr :value
-    %expr:value
+    %expr:cast
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 inline_var :value
-    %name
+    %.:name
+
+inline_var :name
+    v%{def.vid}_%def.normalize_name()
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -165,6 +177,10 @@ array :output
 inline_item :output
     r%{rid}.push( %value:value );
 
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+xml :output
+    %content:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -179,4 +195,18 @@ inline_item :output
 
 * :default_value
     ""
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+string_literal :cast
+    %.:value
+
+inline_expr :cast [ ast.from_type === 'json' ]
+    to_%{to_type}( %.:value )
+
+inline_expr :cast [ ast.from_type && ast.to_type ]
+    %{from_type}_to_%{to_type}( %.:value )
+
+inline_expr :cast
+    %.:value
 
