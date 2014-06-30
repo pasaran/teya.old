@@ -1,5 +1,9 @@
 module
-    var m0 = {};
+    var no = require( 'nommon' );
+    var R = require( './lib/runtime.js' );
+    var M = {};
+
+    var to_string = R.to_string;
 
     %vars:define
 
@@ -12,14 +16,14 @@ module
     module.exports = function( x0, id ) {
         init_vars( x0 );
 
-        return m0[ id ]( x0 );
+        return M[ id ]( x0 );
     };
 
 module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    m0[ "%name" ] = function %{name}() {
+    M[ "%name" ] = function %{name}( x%rid ) {
         %body:prologue
         %body:output
         %body:epilogue

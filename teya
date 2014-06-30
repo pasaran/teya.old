@@ -104,7 +104,7 @@ function compile( filename ) {
         }
     } );
 
-    console.log( ast.to_string( true ) );
+    console.error( ast.to_string( true ) );
 
     //  console.log( ast.teya( '' ) );
     console.log( ast.js( '' ) );
