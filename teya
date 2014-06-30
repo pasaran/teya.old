@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
+// vim: set filetype=javascript:
+
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 var nopt = require( 'nopt' );
 
-var Parser = require( './lib/teya-parser.js' );
-var grammar = require( './lib/teya-grammar.js' );
-var ctors = require( './lib/teya-ctors.js' );
-var Scope = require( './lib/teya-scope.js' );
+var teya = require( './lib/teya.js' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -19,14 +18,22 @@ if ( options.help ) {
 } else if ( options.version ) {
     version();
 
+} else if ( options.data && options.template ) {
+    var data = eval( '(' + options.data + ')' );
+
+    var files = get_teya_files( options );
+    for ( var i = 0, l = files.length; i < l; i++ ) {
+        var filename = files[ i ];
+
+        console.log( teya.run( filename, data, options.template ) );
+    }
+
 } else {
-    var filename = options.argv.remain[ 0 ];
+    var files = get_teya_files( options );
+    for ( var i = 0, l = files.length; i < l; i++ ) {
+        var filename = files[ i ];
 
-    if ( filename && /\.teya$/.test( filename ) ) {
-        compile( filename );
-
-    } else {
-        help();
+        teya.compile( filename );
     }
 }
 
@@ -37,14 +44,38 @@ function get_options() {
         {
             'help': Boolean,
             'version': Boolean,
+            'data': String,
+            'template': String,
         },
         {
             'h': '--help',
             'v': '--version',
+            'd': '--data',
+            't': '--template',
         }
     );
 
     return options;
+}
+
+function get_teya_files( options ) {
+    var files = options.argv.remain;
+    var teya_files = [];
+
+    for ( var i = 0, l = files.length; i < l; i++ ) {
+        var filename = files[ i ];
+        if ( /\.teya$/.test( filename ) ) {
+            teya_files.push( filename );
+        }
+    }
+
+    if ( !teya_files.length ) {
+        help();
+
+        process.exit( 1 );
+    }
+
+    return teya_files;
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
@@ -63,54 +94,5 @@ function version() {
     console.log( require( './package.json' ).version );
 }
 
-function compile( filename ) {
-    var parser = new Parser( grammar, ctors );
-    parser.load_file( filename );
-
-    var ast = parser.match( 'module' );
-
-    //  Проставляем parent'ы и scope'ы.
-    ast.scope = new Scope();
-    ast.dowalk( function( ast, params, pkey, pvalue ) {
-        var parent = ast.parent = pvalue || null;
-
-        if ( parent ) {
-            ast.scope = ( ast.options.scope ) ? parent.scope.create() : parent.scope;
-        }
-    } );
-
-    ast.dowalk( function( ast ) {
-        ast.w_def();
-    } );
-
-    ast.walkdo( function( ast ) {
-        ast.w_action();
-    } );
-
-    /*
-    ast.dowalk( function( ast ) {
-        ast.w_validate();
-    } );
-    */
-
-    ast.dowalk( function( ast ) {
-        ast.w_prepare();
-
-        var parent = ast.parent;
-        if ( parent ) {
-            ast.rid += parent.rid;
-            ast.cid += parent.cid;
-            ast.nid += parent.nid;
-        }
-    } );
-
-    console.error( ast.to_string( true ) );
-
-    //  console.log( ast.teya( '' ) );
-    console.log( ast.js( '' ) );
-}
-
 //  ---------------------------------------------------------------------------------------------------------------  //
-
-// vim: set filetype=javascript:
 
