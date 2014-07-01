@@ -4,6 +4,8 @@ module
     var M = {};
 
     var to_string = R.to_string;
+    var to_number = R.to_number;
+    var to_xml = R.to_xml;
 
     %vars:define
 
@@ -97,7 +99,7 @@ value :value
     %value:value
 
 value :output
-    r%rid += %value:cast
+    r%rid += %value:cast;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -213,7 +215,7 @@ xml :output
 string_literal :cast
     %.:value
 
-inline_expr :cast [ ast.to_type === 'string' || ast.to_type === 'xml' ]
+inline_expr :cast [ ast.to_type === 'string' || ast.to_type === 'xml' || ast.to_type === 'number' ]
     to_%{to_type}( %.:value )
 
 inline_expr :cast [ ast.from_type === 'json' ]

@@ -28,6 +28,15 @@ if ( options.help ) {
         console.log( teya.run( filename, data, options.template ) );
     }
 
+} else if ( options.ast ) {
+    var files = get_teya_files( options );
+    for ( var i = 0, l = files.length; i < l; i++ ) {
+        var filename = files[ i ];
+
+        var ast = teya.parse( filename );
+        console.log( ast.to_string( true ) );
+    }
+
 } else {
     var files = get_teya_files( options );
     for ( var i = 0, l = files.length; i < l; i++ ) {
@@ -46,12 +55,14 @@ function get_options() {
             'version': Boolean,
             'data': String,
             'template': String,
+            'ast': Boolean,
         },
         {
             'h': '--help',
             'v': '--version',
             'd': '--data',
             't': '--template',
+            'a': '--ast',
         }
     );
 
