@@ -1,5 +1,0 @@
-page
-    DIV.first
-        DIV.second
-            "Hello"
-

@@ -9,9 +9,7 @@ var path_ = require( 'path' );
 
 require( 'no.colors' );
 
-var Parser = require( '../lib/teya-parser.js' );
-var grammar = require( '../lib/teya-grammar.js' );
-var ctors = require( '../lib/teya-ctors.js' );
+var teya = require( '../lib/teya.js' );
 var Terror = require( '../lib/terror.js' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
@@ -22,25 +20,30 @@ var oks = 0;
 var fails = 0;
 
 for (var i = 0, l = files.length; i < l; i++) {
-    var filename = files[i];
+    var fn = files[ i ];
 
-    var parser = new Parser( grammar, ctors );
+    var content = fs_.readFileSync( fn, 'utf-8' );
+    var test = eval( '(' + content + ')' );
+
+    var teya_fn = test.teya || fn.replace( /\.test$/, '.teya' );
+    var data_fn = test.data || fn.replace( /\.test$/, '.data' );
+    var tid = test.template || 'page';
 
     try {
-        parser.load_file( filename );
+        var result = teya.run( teya_fn, tid, data_fn );
 
-        var ast = parser.match( 'module' );
-
-        ok( filename );
+        if ( test.result === result ) {
+            ok( fn );
+        } else {
+            fail( fn );
+        }
 
     } catch ( e ) {
-        var error = get_error( filename );
-
-        if ( error && ( e instanceof Terror ) && part_of( error, e ) ) {
-            ok( filename );
+        if ( test.error && ( e instanceof Terror ) && part_of( test.error, e.error ) ) {
+            ok( fn );
 
         } else {
-            fail( filename );
+            fail( fn );
         }
     }
 }
@@ -93,28 +96,16 @@ function part_of( obj1, obj2 ) {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-function get_error( filename ) {
-    filename = filename.replace( /\.teya$/, '.error' );
-
-    try {
-        var error = fs_.readFileSync( filename );
-
-        return eval( '(' + error + ')' );
-    } catch ( e ) {
-        return null;
-    }
-}
-
 function get_files( dir, result ) {
     dir = dir || '.';
     result = result || [];
 
     var items = fs_.readdirSync( dir ).sort();
-    for (var i = 0, l = items.length; i < l; i++) {
-        var item = path_.join( dir, items[i] );
+    for ( var i = 0, l = items.length; i < l; i++ ) {
+        var item = path_.join( dir, items[ i ] );
 
         var stat = fs_.statSync( item );
-        if ( stat.isFile() && /\.teya$/.test( item ) ) {
+        if ( stat.isFile() && /\.test$/.test( item ) ) {
             result.push( item );
         } else if ( stat.isDirectory() ) {
             get_files( item, result );

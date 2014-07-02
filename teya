@@ -27,13 +27,12 @@ if ( options.help ) {
     }
 
 } else if ( options.run ) {
-    var data = ( options.data ) ? eval( '(' + options.data + ')' ) : {};
-
     var files = get_teya_files( options );
     for ( var i = 0, l = files.length; i < l; i++ ) {
         var filename = files[ i ];
 
-        console.log( teya.run( filename, data, options.run ) );
+        var result = teya.run( filename, options.run, options.data );
+        console.log( result );
     }
 
 } else if ( options.ast ) {

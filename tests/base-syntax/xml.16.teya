@@ -1,6 +1,0 @@
-page
-    DIV.first
-        "First"
-    DIV.second
-        "Second"
-
