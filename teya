@@ -18,14 +18,22 @@ if ( options.help ) {
 } else if ( options.version ) {
     version();
 
-} else if ( options.data && options.template ) {
-    var data = eval( '(' + options.data + ')' );
+} else if ( options.compile ) {
+    var files = get_teya_files( options );
+    for ( var i = 0, l = files.length; i < l; i++ ) {
+        var filename = files[ i ];
+
+        teya.compile_to_file( filename );
+    }
+
+} else if ( options.run ) {
+    var data = ( options.data ) ? eval( '(' + options.data + ')' ) : {};
 
     var files = get_teya_files( options );
     for ( var i = 0, l = files.length; i < l; i++ ) {
         var filename = files[ i ];
 
-        console.log( teya.run( filename, data, options.template ) );
+        console.log( teya.run( filename, data, options.run ) );
     }
 
 } else if ( options.ast ) {
@@ -42,8 +50,10 @@ if ( options.help ) {
     for ( var i = 0, l = files.length; i < l; i++ ) {
         var filename = files[ i ];
 
-        teya.compile( filename );
+        var out = teya.compile( filename );
+        console.log( out );
     }
+
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
@@ -53,16 +63,18 @@ function get_options() {
         {
             'help': Boolean,
             'version': Boolean,
-            'data': String,
-            'template': String,
             'ast': Boolean,
+            'compile': Boolean,
+            'run': String,
+            'data': String,
         },
         {
             'h': '--help',
             'v': '--version',
-            'd': '--data',
-            't': '--template',
             'a': '--ast',
+            'c': '--compile',
+            'r': '--run',
+            'd': '--data',
         }
     );
 
@@ -97,7 +109,9 @@ function help() {
     console.log( '    teya --help' );
     console.log( '    teya --version' );
     console.log( '' );
-    console.log( '    teya filename.teya' );
+    console.log( '    teya --compile foo.teya bar.teya' );
+    console.log( '    teya foo.teya' );
+    console.log( '    teya --run test --data "{ foo: 42 }" foo.teya' );
     console.log( '' );
 };
 
