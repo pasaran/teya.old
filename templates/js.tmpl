@@ -28,11 +28,17 @@ def_template
     M[ "%name" ] = function %{name}( x%rid ) {
         %body:prologue
         %body:output
-        %body:epilogue
+        return r%rid;
     };
 
+def_var :def [ ast.value.is_inline() ]
+    //  %name: %get_type()
+    var %.:name = %value:value;
+
 def_var :def
-    %.:name = %value:value;
+    %value:prologue
+    %value:output
+    var %.:name = r%value.rid;
 
 def_var :name
     v%{vid}_%normalize_name()
@@ -42,22 +48,19 @@ def_var :list
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-block :prologue [ ast.get_type() === 'object' ]
+* :prologue [ ast.get_type() === 'object' ]
     var r%rid = {};
 
-block :prologue [ ast.get_type() === 'array' ]
+* :prologue [ ast.get_type() === 'array' ]
     var r%rid = [];
 
-block :prologue [ ast.get_type() === 'attr' ]
+* :prologue [ ast.get_type() === 'attr' ]
     //  FIXME
 
-block :prologue
+* :prologue [ ast.get_type() === 'json' ]
+
+* :prologue
     var r%rid = '';
-
-#   ---------------------------------------------------------------------------------------------------------------   #
-
-block :epilogue
-    return r%rid;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -67,6 +70,9 @@ block :output
     %exprs:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
+
+if :value [ ast.is_inline() ]
+    ( %condition:value ) ? %then.exprs:cast : %elses:cast
 
 if :output
     if ( %condition:value ) %then:if_body %elses:if_body
@@ -78,6 +84,9 @@ block :if_body
 
 else_if :if_body
     else if ( %condition:value ) %body:if_body
+
+else :cast
+    %body.exprs:cast
 
 else :if_body
     else {
@@ -95,11 +104,17 @@ for :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+value :cast
+    %value:cast
+
 value :value
     %value:value
 
-value :output
+value :output [ ast.get_type() === 'string' || ast.get_type() === 'xml' ]
     r%rid += %value:cast;
+
+value :output
+    r%rid = %value:cast;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -169,7 +184,7 @@ false :value
 object :output
     %body:output
 
-inline_pair
+inline_pair :output [ ast.value.is_inline() ]
     r%rid[ %key:value ] = %value:value;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
