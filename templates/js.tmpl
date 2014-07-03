@@ -250,6 +250,9 @@ xml_attr :output
 #   FIXME: Тут, видимо, должно быть %value:cast?
     '%name': %value:value
 
+close_attrs :output
+    r%rid += close_attrs( a%rid );
+
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 * :default_value [ ast.get_type() === 'object' ]
