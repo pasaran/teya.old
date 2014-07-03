@@ -25,7 +25,7 @@ module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    M[ "%name" ] = function %{name}( x%rid ) {
+    M[ '%name' ] = function %{name}( x%rid ) {
         %body:prologue
         %body:output
         return r%rid;
@@ -119,7 +119,7 @@ value :output
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 jpath :value
-    no.jpath( "%teya()", x%cid )
+    no.jpath( '%teya()', x%cid )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -149,8 +149,14 @@ inline_string :cast
 inline_string :value
     %value:cast
 
+string_literal :name
+    %stringify()
+
+string_literal :cast
+    %.:value
+
 string_literal :value
-    "%stringify()"
+    '%stringify()'
 
 string_expr :value
     %expr:cast
@@ -200,16 +206,49 @@ inline_item :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-xml :output [ typeof ast.name === 'string' ]
-    r%rid += '<%name>';
-    %content:output
-    r%rid += '</%name>';
-
 xml :output
-    var n%nid = %name:cast;
-    r0 += '<' + n%nid + '>';
+    %.:start
     %content:output
-    r0 += '</' + n%nid + '>';
+    %.:end
+
+xml :start [ ast.name.is_const() && ast.content.starts_with_attr() !== false ]
+    r%rid += '<%name:name';
+    a%rid = {
+        tag: '%name:name',
+        attrs: {
+            %attrs:output
+        }
+    };
+
+xml :start [ ast.name.is_const() ]
+    r%rid += '<%name:name>';
+
+xml :start [ ast.content.starts_with_attr() !== false ]
+    var n%nid = %name:cast;
+    r%rid += '<' + n%nid;
+    a%rid = {
+        tag: n%nid,
+        attrs: {
+            %attrs:output
+        }
+    };
+
+xml :start
+    var n%nid = %name:cast;
+    r%rid += '<' + n%nid + '>';
+
+xml :end [ ast.name.is_const() ]
+    r%rid += '</%name:name>';
+
+xml :end
+    r%rid += '</' + n%nid + '>';
+
+xml_attr :inline
+    ' %name="' + %value:value + '"'
+
+xml_attr :output
+#   FIXME: Тут, видимо, должно быть %value:cast?
+    '%name': %value:value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -223,12 +262,9 @@ xml :output
     false
 
 * :default_value
-    ""
+    ''
 
 #   ---------------------------------------------------------------------------------------------------------------   #
-
-string_literal :cast
-    %.:value
 
 inline_expr :cast [ ast.to_type === 'string' || ast.to_type === 'xml' || ast.to_type === 'number' ]
     to_%{to_type}( %.:value )
