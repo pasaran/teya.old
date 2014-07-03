@@ -6,6 +6,7 @@ module
     var to_string = R.to_string;
     var to_number = R.to_number;
     var to_xml = R.to_xml;
+    var close_attrs = R.close_attrs;
 
     %vars:define
 
@@ -18,14 +19,18 @@ module
     module.exports = function( x0, id ) {
         init_vars( x0 );
 
-        return M[ id ]( x0 );
+        var a0 = {
+            attrs: {}
+        };
+
+        return M[ id ]( x0, a0 );
     };
 
 module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    M[ '%name' ] = function %{name}( x%rid ) {
+    M[ '%name' ] = function %{name}( x%rid, a%rid ) {
         %body:prologue
         %body:output
         return r%rid;
@@ -252,6 +257,9 @@ xml_attr :output
 
 close_attrs :output
     r%rid += close_attrs( a%rid );
+
+attr :output [ ast.value.is_inline() ]
+    a%{rid}.attrs[ '%name:cast' ] = %value:cast;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
