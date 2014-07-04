@@ -118,8 +118,16 @@ value :value
 value :output [ ast.get_type() === 'string' || ast.get_type() === 'xml' ]
     r%rid += %value:cast;
 
-value :output
+value :output [ !ast.to_type ]
     r%rid = %value:cast;
+
+value :output
+    r%rid += %value:cast;
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+subexpr :output
+    %body:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
