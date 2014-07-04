@@ -7,6 +7,7 @@ module
     var to_number = R.to_number;
     var to_xml = R.to_xml;
     var close_attrs = R.close_attrs;
+    var copy_attrs = R.copy_attrs;
 
     %vars:define
 
@@ -43,6 +44,14 @@ def_var :def [ ast.value.is_inline() ]
 def_var :def
     %value:prologue
     %value:output
+    %.:epilogue
+
+def_var :epilogue [ ast.value.get_type() === 'attr' ]
+    //  %name: %get_type()
+    var %.:name = a%{value.rid}.attrs;
+
+def_var :epilogue
+    //  %name: %get_type()
     var %.:name = r%value.rid;
 
 def_var :name
@@ -60,7 +69,7 @@ def_var :list
     var r%rid = [];
 
 * :prologue [ ast.get_type() === 'attr' ]
-    //  FIXME
+    var a%rid = { attrs: {} };
 
 * :prologue [ ast.get_type() === 'json' ]
 
@@ -117,6 +126,9 @@ value :value
 
 value :output [ ast.get_type() === 'string' || ast.get_type() === 'xml' ]
     r%rid += %value:cast;
+
+value :output [ ast.get_type() === 'attr' ]
+    copy_attrs( a%rid, %value:value );
 
 value :output [ !ast.to_type ]
     r%rid = %value:cast;
@@ -205,6 +217,11 @@ object :output
 
 inline_pair :output [ ast.value.is_inline() ]
     r%rid[ %key:value ] = %value:value;
+
+pair :output
+    %value:prologue
+    %value:output
+    r%rid[ %key:value ] = r%value.rid;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
