@@ -1,0 +1,5 @@
+{
+    description: 'empty tag',
+    result: '<div></div>'
+}
+

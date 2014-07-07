@@ -1,0 +1,5 @@
+{
+    description: 'tag with inline attribute and attribute with the same name',
+    result: '<div class="bye">Bye</div>'
+}
+

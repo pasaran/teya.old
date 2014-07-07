@@ -1,0 +1,21 @@
+{
+    description: 'if/else with attribute',
+    tests: [
+        {
+            data: {
+                hello: 'hello'
+            },
+            result: '<div class="hello">Hello</div>'
+        },
+        {
+            data: {
+                bye: 'bye'
+            },
+            result: '<div class="bye">Bye</div>'
+        },
+        {
+            result: '<div></div>'
+        }
+    ]
+}
+

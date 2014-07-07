@@ -1,0 +1,5 @@
+{
+    description: 'empty tag with inline attribute',
+    result: '<div class="hello"></div>'
+}
+

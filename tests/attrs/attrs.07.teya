@@ -1,0 +1,6 @@
+page
+    <div>
+        if .hello
+            @class = .hello
+
+            "Hello"
