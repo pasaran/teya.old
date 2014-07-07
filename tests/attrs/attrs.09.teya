@@ -4,5 +4,4 @@ page
             @hello = "hello"
 
             "Hello"
-        @bye = "bye
-"
+        @bye = "bye"
