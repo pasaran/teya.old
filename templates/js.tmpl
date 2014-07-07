@@ -73,6 +73,9 @@ def_var :list
 
 * :prologue [ ast.get_type() === 'json' ]
 
+* :prologue [ ast.get_type() === 'xml' ]
+    var r%rid = '', a%rid = { attrs: {} };
+
 * :prologue
     var r%rid = '';
 
