@@ -1,0 +1,6 @@
+page
+    <div>
+        @hello = "hello"
+        "Hello"
+        @bye = "bye"
+
