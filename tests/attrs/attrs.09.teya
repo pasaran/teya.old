@@ -1,0 +1,8 @@
+page
+    <div>
+        if .hello
+            @hello = "hello"
+
+            "Hello"
+        @bye = "bye
+"
