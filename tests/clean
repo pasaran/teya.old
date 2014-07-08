@@ -1,4 +1,0 @@
-#!/bin/sh
-
-rm *.teya.js > /dev/null 2> /dev/null
-
