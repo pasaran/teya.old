@@ -1,6 +1,6 @@
 page
     <div>
-        @hello = "hello"
+        @class = "hello"
         "Hello"
-        @bye = "bye"
+        @class = "bye"
 
