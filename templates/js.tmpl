@@ -245,7 +245,7 @@ xml :output
     %content:output
     %.:end
 
-xml :start [ ast.name.is_const() && ast.content.starts_with_attr() !== false ]
+xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false ) ]
     r%rid += '<%name:name';
     a%rid = {
         tag: '%name:name',
