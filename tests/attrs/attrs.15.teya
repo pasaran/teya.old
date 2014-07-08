@@ -1,0 +1,10 @@
+page
+    content = (
+        @class = "hello"
+
+        "Hello"
+    )
+
+    <div>
+        content
+
