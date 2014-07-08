@@ -1,0 +1,8 @@
+{
+    data: {},
+    error: {
+        id: 'TOKEN_EXPECTED',
+        token: '>'
+    }
+}
+

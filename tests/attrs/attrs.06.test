@@ -1,5 +1,4 @@
 {
-    description: 'empty tag and attribute',
     result: '<div class="hello"></div>'
 }
 

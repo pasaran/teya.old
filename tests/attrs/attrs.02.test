@@ -1,4 +1,4 @@
 {
-    description: 'xml-tag and xml-attribute',
     result: '<div class="hello">Hello</div>'
 }
+

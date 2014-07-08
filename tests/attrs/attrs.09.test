@@ -1,15 +1,12 @@
-{
-    description: 'if with attribute and scalar, and attribute after if',
-    tests: [
-        {
-            data: {
-                hello: 'hello'
-            },
-            result: '<div class="hello">Hello</div>'
+[
+    {
+        data: {
+            hello: 'hello'
         },
-        {
-            result: '<div class="bye"></div>'
-        }
-    ]
-}
+        result: '<div class="hello">Hello</div>'
+    },
+    {
+        result: '<div class="bye"></div>'
+    }
+]
 

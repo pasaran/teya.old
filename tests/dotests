@@ -7,6 +7,7 @@
 var fs_ = require( 'fs' );
 var path_ = require( 'path' );
 
+var no = require( 'nommon' );
 require( 'no.colors' );
 
 var teya = require( '../lib/teya.js' );
@@ -14,61 +15,66 @@ var Terror = require( '../lib/terror.js' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
+console.log( '' );
+
 var files = get_files();
 
 var oks = 0;
 var fails = 0;
 
 for (var i = 0, l = files.length; i < l; i++) {
-    var fn = files[ i ];
+    var filename = files[ i ];
 
-    var content = fs_.readFileSync( fn, 'utf-8' );
-    var test = eval( '(' + content + ')' );
+    var content = fs_.readFileSync( filename, 'utf-8' );
+    var tests = eval( '(' + content + ')' );
+    if ( !Array.isArray( tests ) ) {
+        tests = [ tests ];
+    }
 
-    var teya_fn = test.teya || fn.replace( /\.test$/, '.teya' );
-    var data_fn = test.data || fn.replace( /\.test$/, '.data' );
-    var tid = test.template || 'page';
+    var test_oks = 0;
+    var test_fails = 0;
+    var k = tests.length;
 
-    try {
-        var result = teya.run( teya_fn, tid, data_fn );
+    var line = no.string.pad_left( filename, 30 ).gray + ' ';
 
-        if ( test.result === result ) {
-            ok( fn );
-        } else {
-            fail( fn );
-        }
+    for ( var j = 0; j < k; j++ ) {
+        var test = tests[ j ];
 
-    } catch ( e ) {
-        if ( test.error && ( e instanceof Terror ) && part_of( test.error, e.error ) ) {
-            ok( fn );
+        var teya_filename = test.teya || filename.replace( /\.test$/, '.teya' );
+        var data_filename = test.data || filename.replace( /\.test$/, '.data' );
+        var template = test.template || 'page';
 
-        } else {
-            fail( fn );
+        try {
+            var result = teya.run( teya_filename, template, data_filename );
+
+            if ( test.result === result ) {
+                test_oks++;
+                line += '*'.green;
+            } else {
+                test_fails++;
+                line += '*'.red;
+            }
+
+        } catch ( e ) {
+            if ( test.error && ( e instanceof Terror ) && part_of( test.error, e.error ) ) {
+                test_oks++;
+                line += '*'.green;
+
+            } else {
+                test_fails++;
+                line += '*'.red;
+            }
         }
     }
+
+    console.log( line );
+
+    oks += test_oks;
+    fails += test_fails;
 }
 
-total();
-
-//  ---------------------------------------------------------------------------------------------------------------  //
-
-function ok( filename ) {
-    oks++;
-
-    console.log( filename, 'ok'.green );
-}
-
-function fail( filename ) {
-    fails++;
-
-    console.log( filename, 'fail'.red );
-}
-
-function total() {
-    console.log();
-    console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
-}
-
+console.log();
+console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
