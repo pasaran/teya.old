@@ -1,0 +1,17 @@
+{
+    item: [
+        {
+            id: 'one',
+            title: 'First'
+        },
+        {
+            id: 'two',
+            title: 'Second'
+        },
+        {
+            id: 'three',
+            title: 'Third'
+        }
+    ]
+}
+

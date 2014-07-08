@@ -42,11 +42,15 @@ for (var i = 0, l = files.length; i < l; i++) {
     for ( var j = 0; j < k; j++ ) {
         var test = tests[ j ];
 
-        var data_filename = test.data;
+        var data = test.data;
+        if ( typeof data === 'string' && /\.(data|json)$/.test( data ) ) {
+            //  Резолвим имя файла с данными относительно имени файла с самим тестом.
+            data = path_.join( path_.dirname( filename ), data );
+        }
         var template = test.template || 'page';
 
         try {
-            var result = teya.run( teya_filename, template, data_filename );
+            var result = teya.run( teya_filename, template, data );
 
             if ( test.result === result ) {
                 test_oks++;
