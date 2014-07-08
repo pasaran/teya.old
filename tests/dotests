@@ -37,11 +37,12 @@ for (var i = 0, l = files.length; i < l; i++) {
 
     var line = no.string.pad_left( filename, 30 ).gray + ' ';
 
+    var teya_filename = filename.replace( /\.test$/, '.teya' );
+
     for ( var j = 0; j < k; j++ ) {
         var test = tests[ j ];
 
-        var teya_filename = test.teya || filename.replace( /\.test$/, '.teya' );
-        var data_filename = test.data || filename.replace( /\.test$/, '.data' );
+        var data_filename = test.data;
         var template = test.template || 'page';
 
         try {

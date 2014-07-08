@@ -1,4 +1,7 @@
 {
+    data: {
+        username: 'nop'
+    },
     result: '<div>Hello, nop</div>'
 }
 

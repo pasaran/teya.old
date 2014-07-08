@@ -3,16 +3,10 @@
         data: {
             hello: 'hello'
         },
-        result: '<div class="hello">Hello</div>'
+        result: '<div class="hello"></div>'
     },
     {
-        data: {
-            bye: 'bye'
-        },
-        result: '<div class="bye">Bye</div>'
-    },
-    {
-        result: '<div></div>'
+        result: '<div class="bye"></div>'
     }
 ]
 

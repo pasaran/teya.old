@@ -1,7 +1,7 @@
 page
     <div>
         if .hello
-            @hello = "hello"
+            @class = "hello"
         else
-            @bye = "bye"
+            @class = "bye"
 
