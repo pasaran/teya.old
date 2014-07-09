@@ -255,7 +255,13 @@ xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false )
     };
 
 xml :start [ ast.name.is_const() ]
-    r%rid += '<%name:name>';
+    r%rid += %.:static_name;
+
+xml :static_name [ ast.attrs.is_empty() ]
+    '<%name:name>'
+
+xml :static_name
+    '<%name:name' + %attrs:inline + '>'
 
 xml :start [ ast.content.starts_with_attr() !== false ]
     var n%nid = %name:cast;
@@ -269,7 +275,13 @@ xml :start [ ast.content.starts_with_attr() !== false ]
 
 xml :start
     var n%nid = %name:cast;
-    r%rid += '<' + n%nid + '>';
+    r%rid += %.:dynamic_name;
+
+xml :dynamic_name [ ast.attrs.is_empty() ]
+    '<' + n%nid + '>'
+
+xml :dynamic_name
+    '<' + n%nid + %attrs:inline + '>'
 
 xml :end [ ast.name.is_const() ]
     r%rid += '</%name:name>';

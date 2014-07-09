@@ -1,0 +1,6 @@
+page
+    name = "div"
+
+    <{ name } class="hello">
+        "Hello"
+
