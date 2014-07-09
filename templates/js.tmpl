@@ -9,6 +9,7 @@ module
     var to_xml = R.to_xml;
     var close_attrs = R.close_attrs;
     var copy_attrs = R.copy_attrs;
+    var to_tagname = R.to_tagname;
 
     %vars:define
 
@@ -264,7 +265,7 @@ xml :static_name
     '<%name:name' + %attrs:inline + '>'
 
 xml :start [ ast.content.starts_with_attr() !== false ]
-    var n%nid = %name:cast;
+    var n%nid = to_tagname( %name:cast );
     r%rid += '<' + n%nid;
     a%rid = {
         tag: n%nid,
@@ -274,7 +275,7 @@ xml :start [ ast.content.starts_with_attr() !== false ]
     };
 
 xml :start
-    var n%nid = %name:cast;
+    var n%nid = to_tagname( %name:cast );
     r%rid += %.:dynamic_name;
 
 xml :dynamic_name [ ast.attrs.is_empty() ]

@@ -1,0 +1,52 @@
+[
+    {
+        data: {
+            tag: 'span'
+        },
+        result: '<span>Hello</span>'
+    },
+    {
+        data: {
+            tag: {
+                foo: 42
+            }
+        },
+        result: '<div>Hello</div>'
+    },
+    {
+        result: '<div>Hello</div>'
+    },
+    {
+        data: {
+            tag: 42
+        },
+        result: '<div>Hello</div>'
+    },
+    //  FIXME: А правильно ли это? Не должно ли быть `'<div>Hello</div>'`.
+    {
+        data: {
+            tag: true
+        },
+        result: '<true>Hello</true>'
+    },
+    //  FIXME: А правильно ли это? Не должно ли быть `'<div>Hello</div>'`.
+    {
+        data: {
+            tag: false
+        },
+        result: '<false>Hello</false>'
+    },
+    {
+        data: {
+            tag: null
+        },
+        result: '<div>Hello</div>'
+    },
+    {
+        data: {
+            tag: '-'
+        },
+        result: '<div>Hello</div>'
+    }
+]
+

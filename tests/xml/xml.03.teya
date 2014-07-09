@@ -1,0 +1,6 @@
+page
+    name = .tag
+
+    <{ name }>
+        "Hello"
+
