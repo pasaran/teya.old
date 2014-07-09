@@ -1,0 +1,5 @@
+page
+    <div>
+        @class = "hello"
+        @class = "goodbye"
+

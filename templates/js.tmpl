@@ -7,9 +7,9 @@ module
     var to_string = R.to_string;
     var to_number = R.to_number;
     var to_xml = R.to_xml;
-    var close_attrs = R.close_attrs;
     var copy_attrs = R.copy_attrs;
     var to_tagname = R.to_tagname;
+    var attrs = R.attrs;
 
     %vars:define
 
@@ -22,9 +22,7 @@ module
     module.exports = function( x0, id ) {
         init_vars( x0 );
 
-        var a0 = {
-            attrs: {}
-        };
+        var a0 = attrs();
 
         return M[ id ]( x0, a0 );
     };
@@ -71,12 +69,12 @@ def_var :list
     var r%rid = [];
 
 * :prologue [ ast.get_type() === 'attr' ]
-    var a%rid = { attrs: {} };
+    var a%rid = attrs();
 
 * :prologue [ ast.get_type() === 'json' ]
 
 * :prologue [ ast.get_type() === 'xml' ]
-    var r%rid = '', a%rid = { attrs: {} };
+    var r%rid = '', a%rid = attrs();
 
 * :prologue
     var r%rid = '';
@@ -133,7 +131,7 @@ value :output [ ast.get_type() === 'string' || ast.get_type() === 'xml' ]
     r%rid += %value:cast;
 
 value :output [ ast.get_type() === 'attr' ]
-    copy_attrs( a%rid, %value:value );
+    a%{rid}.copy( %value:value );
 
 value :output [ !ast.to_type ]
     r%rid = %value:cast;
@@ -248,12 +246,9 @@ xml :output
 
 xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false ) ]
     r%rid += '<%name:name';
-    a%rid = {
-        tag: '%name:name',
-        attrs: {
-            %attrs:output
-        }
-    };
+    a%rid = attrs( '%name:name', {
+        %attrs:output
+    } );
 
 xml :start [ ast.name.is_const() ]
     r%rid += %.:static_name;
@@ -267,12 +262,9 @@ xml :static_name
 xml :start [ ast.content.starts_with_attr() !== false ]
     var n%nid = to_tagname( %name:cast );
     r%rid += '<' + n%nid;
-    a%rid = {
-        tag: n%nid,
-        attrs: {
-            %attrs:output
-        }
-    };
+    a%rid = attrs( n%nid, {
+        %attrs:output
+    } );
 
 xml :start
     var n%nid = to_tagname( %name:cast );
@@ -298,10 +290,14 @@ xml_attr :output
     '%name': %value:value
 
 close_attrs :output
-    r%rid += close_attrs( a%rid );
+    r%rid += a%{rid}.close();
+
+attr :output [ ast.value.is_inline() && ast.op === '+=' ]
+    a%{rid}.add( '%name:cast', %value:cast );
 
 attr :output [ ast.value.is_inline() ]
-    a%{rid}.attrs[ '%name:cast' ] = %value:cast;
+    a%{rid}.set( '%name:cast', %value:cast );
+
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
