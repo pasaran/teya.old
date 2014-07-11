@@ -2,7 +2,9 @@
     data: {},
     error: {
         id: 'TOKEN_EXPECTED',
-        token: '>'
+        params: {
+            token: '>'
+        }
     }
 }
 

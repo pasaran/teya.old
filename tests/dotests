@@ -61,7 +61,7 @@ for (var i = 0, l = files.length; i < l; i++) {
             }
 
         } catch ( e ) {
-            if ( test.error && ( e instanceof Terror ) && part_of( test.error, e.error ) ) {
+            if ( test.error && ( e instanceof Terror ) && ( e.id === test.error.id ) && part_of( test.error.params, e.params ) ) {
                 test_oks++;
                 line += '*'.green;
 
