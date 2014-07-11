@@ -1,0 +1,18 @@
+item
+    <li class="item">
+        ...
+
+list
+    <ul class="list">
+        ...
+
+page
+    list
+        @class += " list__vertical"
+        for .item
+            item
+                if .selected
+                    @class += " selected"
+                @id = .id
+                .title
+
