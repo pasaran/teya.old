@@ -13,6 +13,8 @@ module
     var to_tagname = R.to_tagname;
     var attrs = R.attrs;
 
+    %contents:content
+
     %vars:define
 
     function init_vars( x0 ) {
@@ -33,7 +35,7 @@ module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    function t_%{name}( x%rid, a%rid ) {
+    function t_%{name}( x%rid, a%rid, content ) {
         %body:prologue
         %body:output
         return r%rid;
@@ -62,6 +64,16 @@ def_var :name
 
 def_var :list
     %.:name
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+block :content
+    function c%{cid}( x0, a0 ) {
+        //  FIXME: Тут должен быть полный пролог.
+        var r%rid = '';
+        %.:output
+        return r%rid;
+    }
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -145,7 +157,7 @@ value :output
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 template :output
-    r%rid += t_%{name}( x%xid, a%rid );
+    r%rid += t_%{name}( x%xid, a%rid, c%content.cid );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -306,6 +318,11 @@ attr :output [ ast.value.is_inline() && ast.op === '+=' ]
 attr :output [ ast.value.is_inline() ]
     a%{rid}.set( '%name:cast', %value:cast );
 
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+param_content :output
+
+    r%rid += content( x%xid, a%rid );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
