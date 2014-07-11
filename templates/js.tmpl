@@ -33,11 +33,12 @@ module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    M[ '%name' ] = function %{name}( x%rid, a%rid ) {
+    function t_%{name}( x%rid, a%rid ) {
         %body:prologue
         %body:output
         return r%rid;
-    };
+    }
+    M[ '%name' ] = t_%name;
 
 def_var :def [ ast.value.is_inline() ]
     //  %name: %get_type()
@@ -115,9 +116,9 @@ else :if_body
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 for :output
-    var items%cid = to_array( %selector:value );
-    for ( var i%cid = 0, l%cid = items%{cid}.length; i%cid < l%cid; i%cid++ ) {
-        var x%body.cid = items%cid[ i%cid ];
+    var items%xid = to_array( %selector:value );
+    for ( var i%xid = 0, l%xid = items%{xid}.length; i%xid < l%xid; i%xid++ ) {
+        var x%body.xid = items%xid[ i%xid ];
         %body:output
     }
 
@@ -143,13 +144,18 @@ value :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+template :output
+    r%rid += t_%{name}( x%xid, a%rid );
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
 subexpr :output
     %body:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 jpath :value
-    no.jpath( '%teya()', x%cid )
+    no.jpath( '%teya()', x%xid )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
