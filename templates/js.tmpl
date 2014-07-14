@@ -35,8 +35,9 @@ module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    function t_%{name}( x%rid, a%rid, content ) {
+    function t_%{name}( x%rid, a%rid, content, vars ) {
         %body:prologue
+        %vars:resolve_vars
         %body:output
         return r%rid;
     }
@@ -68,12 +69,16 @@ def_var :list
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 block :content
-    function c%{cid}( x0, a0 ) {
+    function c%{cid}( x0, a0, vars ) {
         //  FIXME: Тут должен быть полный пролог.
         var r%rid = '';
+        %vars:resolve_vars
         %.:output
         return r%rid;
     }
+
+inline_var :resolve_vars
+    var %def:name = vars[ '%name' ];
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -156,8 +161,14 @@ value :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+template :output [ ast.content.vars ]
+    r%rid += t_%{name}( x%xid, a%rid, c%content.cid, { %content.vars:content_vars } );
+
 template :output
     r%rid += t_%{name}( x%xid, a%rid, c%content.cid );
+
+inline_var :content_vars
+    '%name': %def:name
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -322,7 +333,7 @@ attr :output [ ast.value.is_inline() ]
 
 param_content :output
 
-    r%rid += content( x%xid, a%rid );
+    r%rid += content( x%xid, a%rid, vars );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 

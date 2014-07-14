@@ -1,0 +1,11 @@
+header
+    <h1>
+        ...
+
+page
+    title = 'Hello'
+
+    header
+        @class = 'header'
+        title
+
