@@ -10,6 +10,8 @@ var path_ = require( 'path' );
 var no = require( 'nommon' );
 require( 'no.colors' );
 
+var _ = require( 'lodash' );
+
 var teya = require( '../lib/teya.js' );
 var Terror = require( '../lib/terror.js' );
 
@@ -52,7 +54,7 @@ for (var i = 0, l = files.length; i < l; i++) {
         try {
             var result = teya.run( teya_filename, template, data );
 
-            if ( test.result === result ) {
+            if ( _.isEqual( test.result, result ) ) {
                 test_oks++;
                 line += '*'.green;
             } else {
@@ -61,7 +63,7 @@ for (var i = 0, l = files.length; i < l; i++) {
             }
 
         } catch ( e ) {
-            if ( test.error && ( e instanceof Terror ) && ( e.id === test.error.id ) && part_of( test.error.params, e.params ) ) {
+            if ( test.error && ( e instanceof Terror ) && ( e.id === test.error.id ) && _.isEqual( test.error.params, e.params ) ) {
                 test_oks++;
                 line += '*'.green;
 
@@ -80,30 +82,6 @@ for (var i = 0, l = files.length; i < l; i++) {
 
 console.log();
 console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
-
-//  ---------------------------------------------------------------------------------------------------------------  //
-
-function part_of( obj1, obj2 ) {
-    if ( !obj1 ) {
-        return obj1 === obj2;
-    }
-
-    if ( typeof obj1 === 'object' ) {
-        if ( typeof obj2 !== 'object' ) {
-            return false;
-        }
-
-        for ( var key in obj1 ) {
-            if ( !part_of( obj1[ key ], obj2[ key ] ) ) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    return obj1 === obj2;
-}
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 

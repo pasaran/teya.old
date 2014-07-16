@@ -1,0 +1,12 @@
+[
+    {
+        data: {
+            username: 'nop'
+        },
+        result: '<div class="hello">Hello, nop</div>'
+    },
+    {
+        result: ''
+    }
+]
+

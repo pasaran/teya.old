@@ -1,0 +1,4 @@
+page
+    is-foo = if .foo
+        true
+

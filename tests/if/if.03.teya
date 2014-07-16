@@ -1,0 +1,6 @@
+page
+    hello = if .username
+        <div class="hello">
+            "Hello, { .username }"
+
+    hello

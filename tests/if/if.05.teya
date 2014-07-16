@@ -1,0 +1,6 @@
+page
+    foo = if .foo
+        .foo
+
+    foo
+

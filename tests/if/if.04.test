@@ -1,0 +1,12 @@
+[
+    {
+        data: {
+            foo: 42
+        },
+        result: true
+    },
+    {
+        result: false
+    }
+]
+

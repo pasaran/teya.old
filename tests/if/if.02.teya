@@ -1,0 +1,8 @@
+page
+    hello = if .username
+        "Hello, "
+        .username
+
+    hello
+
+
