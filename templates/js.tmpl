@@ -12,6 +12,7 @@ module
     var copy_attrs = R.copy_attrs;
     var to_tagname = R.to_tagname;
     var attrs = R.attrs;
+    var is_empty_tag = R.is_empty_tag;
 
     %contents:content
 
@@ -287,11 +288,17 @@ xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false )
 xml :start [ ast.name.is_const() ]
     r%rid += %.:static_name;
 
+xml :close_start_tag [ ast.is_empty_tag ]
+    />
+
+xml :close_start_tag
+    >
+
 xml :static_name [ ast.attrs.is_empty() ]
-    '<%name:name>'
+    '<%{name:name}%.:close_start_tag'
 
 xml :static_name
-    '<%name:name' + %attrs:inline + '>'
+    '<%name:name' + %attrs:inline + '%.:close_start_tag'
 
 xml :start [ ast.content.starts_with_attr() !== false ]
     var n%nid = to_tagname( %name:cast );
@@ -305,16 +312,20 @@ xml :start
     r%rid += %.:dynamic_name;
 
 xml :dynamic_name [ ast.attrs.is_empty() ]
-    '<' + n%nid + '>'
+    '<' + n%nid + ( is_empty_tag( n%nid ) ? '/>' : '>' )
 
 xml :dynamic_name
-    '<' + n%nid + %attrs:inline + '>'
+    '<' + n%nid + %attrs:inline + ( is_empty_tag( n%nid ) ? '/>' : '>' )
+
+xml :end [ ast.name.is_const() && ast.is_empty_tag ]
 
 xml :end [ ast.name.is_const() ]
     r%rid += '</%name:name>';
 
 xml :end
-    r%rid += '</' + n%nid + '>';
+    if ( !is_empty_tag( n%nid ) ) {
+        r%rid += '</' + n%nid + '>';
+    }
 
 xml_attr :inline
     ' %name="' + %value:value + '"'

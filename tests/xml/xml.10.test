@@ -1,0 +1,15 @@
+[
+    {
+        data: {
+            name: 'img'
+        },
+        result: '<img/>Hello'
+    },
+    {
+        data: {
+            name: 'div'
+        },
+        result: '<div>Hello</div>'
+    }
+]
+
