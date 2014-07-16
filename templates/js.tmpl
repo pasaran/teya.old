@@ -108,6 +108,9 @@ block :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+if :value [ ast.is_inline() && ast.elses.is_empty() ]
+    ( %condition:value ) ? %then.exprs:cast : %.:default_value
+
 if :value [ ast.is_inline() ]
     ( %condition:value ) ? %then.exprs:cast : %elses:cast
 
