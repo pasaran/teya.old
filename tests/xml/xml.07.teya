@@ -1,0 +1,6 @@
+page
+    <img src="foo.png">
+        @class = "image"
+
+        "Hello"
+

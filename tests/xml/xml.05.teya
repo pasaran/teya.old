@@ -1,0 +1,4 @@
+page
+    <img>
+        @src = "foo.png"
+
