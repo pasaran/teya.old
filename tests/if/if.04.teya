@@ -2,3 +2,5 @@ page
     is-foo = if .foo
         true
 
+    is-foo
+
