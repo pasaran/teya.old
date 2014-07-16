@@ -1,0 +1,9 @@
+[
+    {
+        data: {
+            class: '"><"'
+        },
+        result: '<div class="&quot;&gt;&lt;&quot;">Hello</div>'
+    }
+]
+

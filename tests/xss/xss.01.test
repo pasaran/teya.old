@@ -1,0 +1,9 @@
+[
+    {
+        data: {
+            text: '<xss/>'
+        },
+        result: '<div>&lt;xss/&gt;</div>'
+    },
+]
+
