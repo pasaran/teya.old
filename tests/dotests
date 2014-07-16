@@ -86,10 +86,9 @@ console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 function get_files( dir, result ) {
-    result = result || [];
-
     var argv = process.argv;
-    if ( argv.length > 1 ) {
+    if ( !result && ( argv.length > 1 ) ) {
+        result = [];
         for ( var i = 2; i < argv.length; i++ ) {
             var arg = argv[ i ];
             if ( /\.test$/.test( arg ) ) {
@@ -101,6 +100,8 @@ function get_files( dir, result ) {
             return result;
         }
     }
+
+    result = result || [];
 
     dir = dir || '.';
 
