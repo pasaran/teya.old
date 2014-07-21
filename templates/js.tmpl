@@ -36,7 +36,7 @@ module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
-    function t_%{name}( x%rid, a%rid, content, vars ) {
+    function t_%{name}( x%rid, a%aid, content, vars ) {
         %body:prologue
         %vars:resolve_vars
         %body:output
@@ -90,12 +90,12 @@ inline_var :resolve_vars
     var r%rid = [];
 
 * :prologue [ ast.get_type() === 'attr' ]
-    var a%rid = attrs();
+    var a%aid = attrs();
 
 * :prologue [ ast.get_type() === 'json' ]
 
 * :prologue [ ast.get_type() === 'xml' ]
-    var r%rid = '', a%rid = attrs();
+    var r%rid = '', a%aid = attrs();
 
 * :prologue
     var r%rid = '';
@@ -166,10 +166,10 @@ value :output
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 template :output [ ast.content.vars ]
-    r%rid += t_%{name}( x%xid, a%rid, c%content.cid, { %content.vars:content_vars } );
+    r%rid += t_%{name}( x%xid, a%aid, c%content.cid, { %content.vars:content_vars } );
 
 template :output
-    r%rid += t_%{name}( x%xid, a%rid, c%content.cid );
+    r%rid += t_%{name}( x%xid, a%aid, c%content.cid );
 
 inline_var :content_vars
     '%name': %def:name
@@ -281,7 +281,7 @@ xml :output
 
 xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false ) ]
     r%rid += '<%name:name';
-    a%rid = attrs( '%name:name', {
+    a%aid = attrs( '%name:name', {
         %attrs:output
     } );
 
@@ -291,7 +291,7 @@ xml :start [ ast.name.is_const() ]
 xml :start [ ast.content.starts_with_attr() !== false ]
     var n%nid = to_tagname( %name:cast );
     r%rid += '<' + n%nid;
-    a%rid = attrs( n%nid, {
+    a%aid = attrs( n%nid, {
         %attrs:output
     } );
 
@@ -347,7 +347,7 @@ attr :output [ ast.value.is_inline() ]
 
 param_content :output
 
-    r%rid += content( x%xid, a%rid, vars );
+    r%rid += content( x%xid, a%aid, vars );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
