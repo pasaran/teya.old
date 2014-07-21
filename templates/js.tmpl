@@ -288,6 +288,17 @@ xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false )
 xml :start [ ast.name.is_const() ]
     r%rid += %.:static_name;
 
+xml :start [ ast.content.starts_with_attr() !== false ]
+    var n%nid = to_tagname( %name:cast );
+    r%rid += '<' + n%nid;
+    a%rid = attrs( n%nid, {
+        %attrs:output
+    } );
+
+xml :start
+    var n%nid = to_tagname( %name:cast );
+    r%rid += %.:dynamic_name;
+
 xml :close_start_tag [ ast.is_empty_tag ]
     />
 
@@ -299,17 +310,6 @@ xml :static_name [ ast.attrs.is_empty() ]
 
 xml :static_name
     '<%name:name' + %attrs:inline + '%.:close_start_tag'
-
-xml :start [ ast.content.starts_with_attr() !== false ]
-    var n%nid = to_tagname( %name:cast );
-    r%rid += '<' + n%nid;
-    a%rid = attrs( n%nid, {
-        %attrs:output
-    } );
-
-xml :start
-    var n%nid = to_tagname( %name:cast );
-    r%rid += %.:dynamic_name;
 
 xml :dynamic_name [ ast.attrs.is_empty() ]
     '<' + n%nid + ( is_empty_tag( n%nid ) ? '/>' : '>' )
