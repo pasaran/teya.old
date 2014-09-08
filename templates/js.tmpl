@@ -93,6 +93,7 @@ inline_var :resolve_vars
     var a%aid = attrs();
 
 * :prologue [ ast.get_type() === 'json' ]
+    var r%rid;
 
 * :prologue [ ast.get_type() === 'xml' ]
     var r%rid = '', a%aid = attrs();
