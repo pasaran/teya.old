@@ -84,7 +84,7 @@ for (var i = 0, l = files.length; i < l; i++) {
                         break;
                     case 'result':
                     case 'diff':
-                        output += JSON.stringify( result, null, 4 ).green + '\n\n';
+                        output += format_result( result ).green + '\n\n';
                         break;
                 }
 
@@ -95,10 +95,10 @@ for (var i = 0, l = files.length; i < l; i++) {
                         output += '*'.red;
                         break;
                     case 'result':
-                        output += JSON.stringify( result, null, 4 ).red + '\n\n';
+                        output += format_result( result ).red + '\n\n';
                         break;
                     case 'diff':
-                        output += JSON.stringify( test.result, null, 4 ).green + '\n' + JSON.stringify( result ).red + '\n\n';
+                        output += format_result( test.result ).green + '\n' + format_result( result ).red + '\n\n';
                         break;
                 }
             }
@@ -149,6 +149,20 @@ for (var i = 0, l = files.length; i < l; i++) {
 
 console.log();
 console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+function format_result( result ) {
+    if ( typeof result !== 'string' ) {
+        return JSON.stringify( result, null, 4 );
+    }
+
+    if ( !result ) {
+        return '""';
+    }
+
+    return result;
+}
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
