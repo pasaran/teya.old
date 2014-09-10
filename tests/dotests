@@ -7,13 +7,36 @@
 var fs_ = require( 'fs' );
 var path_ = require( 'path' );
 
+var _ = require( 'lodash' );
+var nopt = require( 'nopt' );
+
 var no = require( 'nommon' );
 require( 'no.colors' );
 
-var _ = require( 'lodash' );
-
 var teya = require( '../lib/teya.js' );
 var Terror = require( '../lib/terror.js' );
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+var options = nopt(
+    {
+        'diff': String,
+        'result': String
+    },
+    {
+        'd': '--diff',
+        'r': '--result',
+    }
+);
+
+var mode;
+if ( options.diff ) {
+    mode = 'diff';
+} else if ( options.result ) {
+    mode = 'result';
+} else {
+    mode = 'compact';
+}
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -37,10 +60,9 @@ for (var i = 0, l = files.length; i < l; i++) {
     var test_fails = 0;
     var k = tests.length;
 
-    var line = no.string.pad_left( filename, 30 ).gray + ' ';
-
     var teya_filename = filename.replace( /\.test$/, '.teya' );
 
+    var output = '';
     for ( var j = 0; j < k; j++ ) {
         var test = tests[ j ];
 
@@ -56,25 +78,70 @@ for (var i = 0, l = files.length; i < l; i++) {
 
             if ( _.isEqual( test.result, result ) ) {
                 test_oks++;
-                line += '*'.green;
+                switch ( mode ) {
+                    case 'compact':
+                        output += '*'.green;
+                        break;
+                    case 'result':
+                    case 'diff':
+                        output += JSON.stringify( result, null, 4 ).green + '\n\n';
+                        break;
+                }
+
             } else {
                 test_fails++;
-                line += '*'.red;
+                switch ( mode ) {
+                    case 'compact':
+                        output += '*'.red;
+                        break;
+                    case 'result':
+                        output += JSON.stringify( result, null, 4 ).red + '\n\n';
+                        break;
+                    case 'diff':
+                        output += JSON.stringify( test.result, null, 4 ).green + '\n' + JSON.stringify( result ).red + '\n\n';
+                        break;
+                }
             }
 
         } catch ( e ) {
             if ( test.error && ( e instanceof Terror ) && ( e.id === test.error.id ) && _.isEqual( test.error.params, e.params ) ) {
                 test_oks++;
-                line += '*'.green;
+                switch ( mode ) {
+                    case 'compact':
+                        output += '*'.green;
+                        break;
+                    case 'result':
+                    case 'diff':
+                        output += 'throws'.green + '\n';
+                        break;
+                }
 
             } else {
                 test_fails++;
-                line += '*'.red;
+                switch ( mode ) {
+                    case 'compact':
+                        output += '*'.red;
+                        break;
+                    case 'result':
+                    case 'diff':
+                        output += 'throws'.red + '\n';
+                        break;
+                }
             }
         }
     }
 
-    console.log( line );
+    switch ( mode ) {
+        case 'compact':
+            output = no.string.pad_left( filename, 30 ).gray + ' ' + output;
+            break;
+        case 'result':
+        case 'diff':
+            output = output.replace( /^/gm, no.string.repeat( ' ', 20 ) );
+            output = no.string.pad_left( filename, 30 ).gray + '\n' + output;
+    }
+
+    console.log( output );
 
     oks += test_oks;
     fails += test_fails;
