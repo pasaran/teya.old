@@ -36,8 +36,9 @@ module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
 def_template
+    //  %name: %get_type()
     function t_%{name}( x%rid, a%aid, content, vars ) {
-        %body:prologue
+        %.:prologue
         %vars:resolve_vars
         %body:output
         return r%rid;
