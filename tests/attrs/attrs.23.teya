@@ -1,0 +1,8 @@
+page
+    foo = '<b>"Foo & Bar"</b>'
+
+    bar = <div>
+        foo
+
+    <div class='<b>"Foo & Bar"</b> ||| { foo } ||| { bar }'/>
+

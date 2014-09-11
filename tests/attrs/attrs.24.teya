@@ -1,0 +1,13 @@
+page
+    foo = '<b>"Foo & Bar"</b>'
+
+    bar = <div>
+        foo
+
+    <div>
+        @class += '<b>"Foo & Bar"</b>'
+        @class += " ||| "
+        @class += foo
+        @class += " ||| "
+        @class += bar
+

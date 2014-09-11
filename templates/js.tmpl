@@ -13,6 +13,10 @@ module
     var to_tagname = R.to_tagname;
     var attrs = R.attrs;
     var is_empty_tag = R.is_empty_tag;
+    var string_attr = R.string_attr;
+    var xml_attr = R.xml_attr;
+    var string_to_attrvalue = R.string_to_attrvalue;
+    var xml_to_attrvalue = R.xml_to_attrvalue;
 
     %contents:content
 
@@ -35,15 +39,45 @@ module
 module_vars :define [ !ast.is_empty() ]
     var %.:list;
 
+#   ---------------------------------------------------------------------------------------------------------------   #
+
 def_template
     //  %name: %get_type()
-    function t_%{name}( x%rid, a%aid, content, vars ) {
+    function t_%{name}( %.:func_args ) {
         %.:prologue
         %vars:resolve_vars
         %body:output
         return r%rid;
     }
     M[ '%name' ] = t_%name;
+
+def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+    x%rid, a%aid, r%rid, content, vars
+
+def_template :func_args
+    x%rid, a%aid, content, vars
+
+def_template :prologue [ ast.get_type() === 'string' ]
+    var r%rid = '';
+
+def_template :prologue [ ast.get_type() === 'object' ]
+    var r%rid = {};
+
+def_template :prologue [ ast.get_type() === 'array' ]
+    var r%rid = [];
+
+def_template :prologue [ ast.get_type() === 'number' || ast.get_type() === 'boolean' || ast.get_type() === 'json' ]
+    var r%rid;
+
+def_template :prologue [ ast.get_type() === 'xml' ]
+    var r%rid = '', a%aid = attrs();
+
+def_template :prologue [ ast.get_type() === 'attr' ]
+    var a%aid = attrs();
+
+def_template :prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+
+#   ---------------------------------------------------------------------------------------------------------------   #
 
 def_var :def [ ast.value.is_inline() ]
     //  %name: %get_type()
@@ -329,21 +363,34 @@ xml :end
         r%rid += '</' + n%nid + '>';
     }
 
+xml_attr :inline [ ast.value.get_type() === 'xml' ]
+    ' %name="' + xml_to_attrvalue( %value:cast ) + '"'
+
 xml_attr :inline
-    ' %name="' + %value:value + '"'
+    ' %name="' + string_to_attrvalue( %value:cast ) + '"'
+
+xml_attr :output [ ast.value.get_type() === 'xml' ]
+#   FIXME: Тут, видимо, должно быть %value:cast?
+    '%name': xml_attr( %value:value )
 
 xml_attr :output
 #   FIXME: Тут, видимо, должно быть %value:cast?
-    '%name': %value:value
+    '%name': string_attr( %value:value )
 
 close_attrs :output
     r%rid += a%{rid}.close();
 
+attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() && ast.op === '+=' ]
+    a%{rid}.add_xml( '%name:cast', %value:cast );
+
 attr :output [ ast.value.is_inline() && ast.op === '+=' ]
-    a%{rid}.add( '%name:cast', %value:cast );
+    a%{rid}.add_string( '%name:cast', %value:cast );
+
+attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() ]
+    a%{rid}.set_xml( '%name:cast', %value:cast );
 
 attr :output [ ast.value.is_inline() ]
-    a%{rid}.set( '%name:cast', %value:cast );
+    a%{rid}.set_string( '%name:cast', %value:cast );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
