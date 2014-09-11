@@ -1,0 +1,4 @@
+{
+    result: '<div foo="foo" bar="bar"></div>'
+}
+
