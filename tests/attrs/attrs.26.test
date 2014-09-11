@@ -1,0 +1,5 @@
+{
+    data: 'attrs.26.data',
+    result: '<div class="&lt;b&gt;&quot;Foo &amp; Bar&quot;&lt;/b&gt; ||| &lt;b&gt;&quot;Foo &amp; Bar&quot;&lt;/b&gt; ||| &lt;b&gt;&quot;Foo &amp; Bar&quot;&lt;/b&gt; ||| &lt;b&gt;&quot;Foo &amp; Bar&quot;&lt;/b&gt; ||| &lt;div&gt;&amp;lt;b&amp;gt;&quot;Foo &amp;amp; Bar&quot;&amp;lt;/b&amp;gt;&lt;/div&gt; ||| &lt;div&gt;&amp;lt;b&amp;gt;&quot;Foo &amp;amp; Bar&quot;&amp;lt;/b&amp;gt;&lt;/div&gt;"></div>'
+}
+

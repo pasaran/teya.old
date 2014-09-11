@@ -1,0 +1,19 @@
+page
+    foo = .foo
+
+    bar = <div>
+        foo
+
+    quu = <div>
+        .foo
+
+    <div class='{ .foo } ||| { foo }'>
+        @class += " ||| "
+        @class += .foo
+        @class += " ||| "
+        @class += foo
+        @class += " ||| "
+        @class += bar
+        @class += " ||| "
+        @class += quu
+
