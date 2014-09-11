@@ -417,6 +417,9 @@ param_content :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+inline_expr :cast [ ast.from_type === 'xml' && ast.to_type === 'string' ]
+    %.:value
+
 inline_expr :cast [ ast.to_type === 'string' || ast.to_type === 'xml' || ast.to_type === 'number' ]
     to_%{to_type}( %.:value )
 
