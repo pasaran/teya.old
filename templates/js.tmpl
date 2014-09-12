@@ -44,7 +44,7 @@ module_vars :define [ !ast.is_empty() ]
 def_template
     //  %name: %get_type()
     function t_%{name}( %.:func_args ) {
-        %.:prologue
+        %.:template_prologue
         %vars:resolve_vars
         %body:output
         return r%rid;
@@ -57,25 +57,25 @@ def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item'
 def_template :func_args
     x%rid, a%aid, content, vars
 
-def_template :prologue [ ast.get_type() === 'string' ]
+def_template :template_prologue [ ast.get_type() === 'string' ]
     var r%rid = '';
 
-def_template :prologue [ ast.get_type() === 'object' ]
+def_template :template_prologue [ ast.get_type() === 'object' ]
     var r%rid = {};
 
-def_template :prologue [ ast.get_type() === 'array' ]
+def_template :template_prologue [ ast.get_type() === 'array' ]
     var r%rid = [];
 
-def_template :prologue [ ast.get_type() === 'number' || ast.get_type() === 'boolean' || ast.get_type() === 'json' ]
+def_template :template_prologue [ ast.get_type() === 'number' || ast.get_type() === 'boolean' || ast.get_type() === 'json' ]
     var r%rid;
 
-def_template :prologue [ ast.get_type() === 'xml' ]
-    var r%rid = '', a%aid = attrs();
+def_template :template_prologue [ ast.get_type() === 'xml' ]
+    var r%rid = '';
 
-def_template :prologue [ ast.get_type() === 'attr' ]
-    var a%aid = attrs();
+def_template :template_prologue [ ast.get_type() === 'attr' ]
+    //  var a%aid = attrs();
 
-def_template :prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+def_template :template_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
