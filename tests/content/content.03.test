@@ -1,0 +1,4 @@
+{
+    result: '<ul><li class="my-item my-super-item">First</li><li class="item my-item my-super-item">Second</li></ul>'
+}
+

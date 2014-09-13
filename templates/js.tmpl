@@ -12,13 +12,12 @@ module
     var copy_attrs = R.copy_attrs;
     var to_tagname = R.to_tagname;
     var attrs = R.attrs;
+    var content_attrs = R.content_attrs;
     var is_empty_tag = R.is_empty_tag;
     var string_attr = R.string_attr;
     var xml_attr = R.xml_attr;
     var string_to_attrvalue = R.string_to_attrvalue;
     var xml_to_attrvalue = R.xml_to_attrvalue;
-
-    %contents:content
 
     %vars:define
 
@@ -45,17 +44,16 @@ def_template
     //  %name: %get_type()
     function t_%{name}( %.:func_args ) {
         %.:template_prologue
-        %vars:resolve_vars
         %body:output
         return r%rid;
     }
     M[ '%name' ] = t_%name;
 
-def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
-    x%rid, a%aid, r%rid, content, vars
+# def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+#     x%rid, r%rid, content, vars
 
 def_template :func_args
-    x%rid, a%aid, content, vars
+    x%rid, a%aid, ca, cr
 
 def_template :template_prologue [ ast.get_type() === 'string' ]
     var r%rid = '';
@@ -105,16 +103,8 @@ def_var :list
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 block :content
-    function c%{cid}( x0, a0, vars ) {
-        //  FIXME: Тут должен быть полный пролог.
-        var r%rid = '';
-        %vars:resolve_vars
-        %.:output
-        return r%rid;
-    }
-
-inline_var :resolve_vars
-    var %def:name = vars[ '%name' ];
+    var r%rid = '', a%rid = content_attrs();
+    %.:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -194,21 +184,17 @@ value :output [ ast.get_type() === 'attr' ]
     a%{rid}.copy( %value:value );
 
 value :output [ !ast.to_type ]
-    r%rid = %value:cast;
+#  FIXME: А почему тут было %value:cast?
+    r%rid = %value:value;
 
 value :output
     r%rid += %value:cast;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-template :output [ ast.content.vars ]
-    r%rid += t_%{name}( x%xid, a%aid, c%content.cid, { %content.vars:content_vars } );
-
 template :output
-    r%rid += t_%{name}( x%xid, a%aid, c%content.cid );
-
-inline_var :content_vars
-    '%name': %def:name
+    %content:content
+    r%rid += t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -396,7 +382,8 @@ attr :output [ ast.value.is_inline() ]
 
 param_content :output
 
-    r%rid += content( x%xid, a%aid, vars );
+    a%{rid}.merge( ca );
+    r%rid += a%{rid}.close() + cr;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 

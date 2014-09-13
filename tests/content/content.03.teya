@@ -1,0 +1,16 @@
+item
+    <li class="item">
+        ...
+
+page
+    <ul>
+        item
+            @class = "my-item"
+            @class += " my-super-item"
+            "First"
+
+        item
+            @class += " my-item"
+            @class += " my-super-item"
+            "Second"
+
