@@ -45,7 +45,7 @@ def_template
     function t_%{name}( %.:func_args ) {
         %.:template_prologue
         %body:output
-        return r%rid;
+        %.:template_epilogue
     }
     M[ '%name' ] = t_%name;
 
@@ -74,6 +74,11 @@ def_template :template_prologue [ ast.get_type() === 'attr' ]
     //  var a%aid = attrs();
 
 def_template :template_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+
+def_template :template_epilogue [ ast.get_type() === 'attr' ]
+
+def_template :template_epilogue
+    return r%rid;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -192,7 +197,12 @@ value :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+template :output [ ast.def.get_type() === 'attr' ]
+    %content:content
+    t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid );
+
 template :output
+    //  %def.get_type()
     %content:content
     r%rid += t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid );
 

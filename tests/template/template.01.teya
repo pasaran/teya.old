@@ -1,0 +1,11 @@
+attrs
+    @foo += "foo"
+    @bar = "bar"
+
+page
+    <div>
+        attrs
+
+    <div foo="bar" bar="foo">
+        attrs
+
