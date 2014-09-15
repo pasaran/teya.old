@@ -1,3 +1,3 @@
 page
-    <div foo="foo" bar="bar"/>
+    <div foo="foo" bar="bar">
 

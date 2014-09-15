@@ -4,5 +4,5 @@ page
     bar = <div>
         foo
 
-    <div class='<b>"Foo & Bar"</b> ||| { foo } ||| { bar }'/>
+    <div class='<b>"Foo & Bar"</b> ||| { foo } ||| { bar }'>
 
