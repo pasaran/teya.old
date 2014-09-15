@@ -55,25 +55,13 @@ def_template
 def_template :func_args
     x%rid, a%aid, ca, cr
 
-def_template :template_prologue [ ast.get_type() === 'string' ]
-    var r%rid = '';
-
-def_template :template_prologue [ ast.get_type() === 'object' ]
-    var r%rid = {};
-
-def_template :template_prologue [ ast.get_type() === 'array' ]
-    var r%rid = [];
-
-def_template :template_prologue [ ast.get_type() === 'number' || ast.get_type() === 'boolean' || ast.get_type() === 'json' ]
-    var r%rid;
-
-def_template :template_prologue [ ast.get_type() === 'xml' ]
-    var r%rid = '';
-
 def_template :template_prologue [ ast.get_type() === 'attr' ]
     //  var a%aid = attrs();
 
 def_template :template_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+
+def_template :template_prologue
+    var r%rid = %.:default_value;
 
 def_template :template_epilogue [ ast.get_type() === 'attr' ]
 
@@ -397,14 +385,23 @@ param_content :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+* :default_value [ ast.get_type() === 'string' ]
+    ''
+
+* :default_value [ ast.get_type() === 'xml' ]
+    ''
+
+* :default_value [ ast.get_type() === 'number' ]
+    0
+
+* :default_value [ ast.get_type() === 'boolean' ]
+    false
+
 * :default_value [ ast.get_type() === 'object' ]
     {}
 
 * :default_value [ ast.get_type() === 'array' ]
     []
-
-* :default_value [ ast.get_type() === 'boolean' ]
-    false
 
 * :default_value [ ast.get_type() === 'json' ]
     null
