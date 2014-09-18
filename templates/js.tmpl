@@ -43,6 +43,7 @@ module_vars :define [ !ast.is_empty() ]
 def_template
     //  %name: %get_type()
     function t_%{name}( %.:func_args ) {
+        %args:default
         %.:template_prologue
         %body:output
         %.:template_epilogue
@@ -53,7 +54,7 @@ def_template
 #     x%rid, r%rid, content, vars
 
 def_template :func_args
-    x%rid, a%aid, ca, cr
+    x%rid, a%aid, ca, cr%args:template_arg
 
 def_template :template_prologue [ ast.get_type() === 'attr' ]
     //  var a%aid = attrs();
@@ -68,11 +69,23 @@ def_template :template_epilogue [ ast.get_type() === 'attr' ]
 def_template :template_epilogue
     return r%rid;
 
+def_arg :default [ ast.default ]
+    if ( %.:var_name == null ) { %.:var_name = %default:cast; }
+
+def_arg :default
+    if ( %.:var_name == null ) { %.:var_name = %.:default_value; }
+
+def_arg :template_arg
+    , %.:var_name
+
+* :var_name
+    v%{vid}_%normalize_name()
+
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 def_var :def [ ast.value.is_inline() ]
     //  %name: %get_type()
-    var %.:name = %value:value;
+    var %.:var_name = %value:value;
 
 def_var :def
     %value:prologue
@@ -81,17 +94,14 @@ def_var :def
 
 def_var :epilogue [ ast.value.get_type() === 'attr' ]
     //  %name: %get_type()
-    var %.:name = a%{value.rid};
+    var %.:var_name = a%{value.rid};
 
 def_var :epilogue
     //  %name: %get_type()
-    var %.:name = r%value.rid;
-
-def_var :name
-    v%{vid}_%normalize_name()
+    var %.:var_name = r%value.rid;
 
 def_var :list
-    %.:name
+    %.:var_name
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -247,10 +257,7 @@ string_expr :value
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 inline_var :value
-    %.:name
-
-inline_var :name
-    v%{def.vid}_%def.normalize_name()
+    %def:var_name
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
