@@ -1,0 +1,12 @@
+wrapper ( content: Xml )
+    <div class="wrapper">
+        content
+
+icon ( name: String )
+    <img src="{ name }.png">
+
+page
+    wrapper
+        content:
+            icon "left"
+

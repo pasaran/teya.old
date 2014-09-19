@@ -1,0 +1,10 @@
+icon ( name: String, attrs: Attr )
+    <img src="{ name }.png">
+        attrs
+
+page
+    icon "left"
+        attrs:
+            @width = 32
+            @height = 32
+

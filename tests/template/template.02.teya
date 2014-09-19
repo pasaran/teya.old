@@ -1,0 +1,6 @@
+icon ( name: String )
+    <img src="{ name }.png">
+
+page
+    icon "left"
+

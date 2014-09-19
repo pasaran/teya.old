@@ -196,13 +196,41 @@ value :output
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 template :output [ ast.def.get_type() === 'attr' ]
+    %params:template_param_def
     %content:content
-    t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid );
+    t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
 
 template :output
+    %params:template_param_def
     //  %def.get_type()
     %content:content
-    r%rid += t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid );
+    r%rid += t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+
+* :template_param_def [ ast.value && !ast.is_inline() ]
+    //  %value.get_type()
+    %value:prologue
+    %value:output
+    %.:template_param_epilogue
+
+* :template_param_epilogue [ ast.value.get_type() === 'attr' ]
+    //  %name: %get_type()
+    var %.:param_name = a%{value.rid};
+
+* :template_param_epilogue
+    //  %name: %get_type()
+    var %.:param_name = r%value.rid;
+
+template_param :template_param_value [ ast.value && ast.value.is_inline() ]
+    , %value:cast
+
+template_param :template_param_value [ ast.value ]
+    , %.:param_name
+
+template_param :template_param_value
+    , null
+
+* :param_name
+    z%{rid}_%normalize_name()
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 

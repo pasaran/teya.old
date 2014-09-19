@@ -1,0 +1,5 @@
+icon ( name: String = "left" )
+    <img src="{ name }.png">
+
+page
+    icon

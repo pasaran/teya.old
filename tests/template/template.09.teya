@@ -1,0 +1,6 @@
+icon ( name: String, width = 32, height = 32 )
+    <img src="{ name }.png" width="{ width }" height="{ height }">
+
+page
+    icon "left"
+
