@@ -42,13 +42,13 @@ module_vars :define [ !ast.is_empty() ]
 
 def_template
     //  %name: %get_type()
-    function t_%{name}( %.:func_args ) {
+    function t_%{normalize_name()}( %.:func_args ) {
         %args:default
         %.:template_prologue
         %body:output
         %.:template_epilogue
     }
-    M[ '%name' ] = t_%name;
+    M[ '%name' ] = t_%normalize_name();
 
 # def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
 #     x%rid, r%rid, content, vars
@@ -195,16 +195,19 @@ value :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+template :name
+    t_%{normalize_name()}
+
 template :output [ ast.def.get_type() === 'attr' ]
     %params:template_param_def
     %content:content
-    t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+    %.:name( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
 
 template :output
     %params:template_param_def
     //  %def.get_type()
     %content:content
-    r%rid += t_%{name}( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+    r%rid += %.:name( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
 
 * :template_param_def [ ast.value && !ast.is_inline() ]
     //  %value.get_type()

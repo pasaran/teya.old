@@ -1,0 +1,11 @@
+item ( content: Xml )
+    <li>
+        content
+
+page
+    <ul>
+        item
+            content:
+                @id = "first"
+                "First"
+

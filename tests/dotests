@@ -46,6 +46,7 @@ var files = get_files();
 
 var oks = 0;
 var fails = 0;
+var known = 0;
 
 for (var i = 0, l = files.length; i < l; i++) {
     var filename = files[ i ];
@@ -56,8 +57,6 @@ for (var i = 0, l = files.length; i < l; i++) {
         tests = [ tests ];
     }
 
-    var test_oks = 0;
-    var test_fails = 0;
     var k = tests.length;
 
     var teya_filename = filename.replace( /\.test$/, '.teya' );
@@ -73,58 +72,71 @@ for (var i = 0, l = files.length; i < l; i++) {
         }
         var template = test.template || 'page';
 
+        var ok_color = 'green';
+        var error_color = ( test.known ) ? 'yellow' : 'red';
+
         try {
             var result = teya.run( teya_filename, template, data );
 
             if ( _.isEqual( test.result, result ) ) {
-                test_oks++;
+                oks++;
                 switch ( mode ) {
                     case 'compact':
-                        output += '*'.green;
+                        output += '*'[ ok_color ];
                         break;
                     case 'result':
                     case 'diff':
-                        output += format_result( result ).green + '\n\n';
+                        output += format_result( result )[ ok_color ] + '\n\n';
                         break;
                 }
 
             } else {
-                test_fails++;
+                if ( test.known ) {
+                    known++;
+                } else {
+                    fails++;
+                }
+
                 switch ( mode ) {
                     case 'compact':
-                        output += '*'.red;
+                        output += '*'[ error_color ];
                         break;
                     case 'result':
-                        output += format_result( result ).red + '\n\n';
+                        output += format_result( result )[ error_color ] + '\n\n';
                         break;
                     case 'diff':
-                        output += format_result( test.result ).green + '\n' + format_result( result ).red + '\n\n';
+                        output += format_result( test.result )[ ok_color ] + '\n' + format_result( result )[ error_color ] + '\n\n';
                         break;
                 }
             }
 
         } catch ( e ) {
             if ( test.error && ( e instanceof Terror ) && ( e.id === test.error.id ) && _.isEqual( test.error.params, e.params ) ) {
-                test_oks++;
+                oks++;
                 switch ( mode ) {
                     case 'compact':
-                        output += '*'.green;
+                        output += '*'[ ok_color ];
                         break;
                     case 'result':
                     case 'diff':
-                        output += 'throws'.green + '\n';
+                        output += 'throws'[ ok_color ] + '\n';
                         break;
                 }
 
             } else {
-                test_fails++;
+                if ( test.known ) {
+                    known++;
+                } else {
+                    fails++;
+                }
+
                 switch ( mode ) {
                     case 'compact':
-                        output += '*'.red;
+                        output += '*'[ error_color ];
                         break;
                     case 'result':
                     case 'diff':
-                        output += 'throws'.red + '\n';
+                        output += 'throws'[ error_color ] + '\n';
                         break;
                 }
             }
@@ -142,13 +154,30 @@ for (var i = 0, l = files.length; i < l; i++) {
     }
 
     console.log( output );
-
-    oks += test_oks;
-    fails += test_fails;
 }
 
 console.log();
-console.log( 'ok: %s, fail: %s\n', oks.toString().green, fails.toString().red );
+
+var output = '';
+if ( oks ) {
+    output += 'ok: ' + oks.toString().green;
+}
+if ( fails + known ) {
+    if ( oks ) {
+        output += ', ';
+    }
+    output += 'fails: ';
+    if ( fails ) {
+        output += fails.toString().red;
+    }
+    if ( known ) {
+        if ( fails ) {
+            output += ' + ';
+        }
+        output += known.toString().yellow;
+    }
+}
+console.log( output, '\n' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
