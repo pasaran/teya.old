@@ -72,7 +72,7 @@ for (var i = 0, l = files.length; i < l; i++) {
         }
         var template = test.template || 'page';
 
-        var ok_color = 'green';
+        var ok_color = ( test.known ) ? 'aqua' : 'green';
         var error_color = ( test.known ) ? 'yellow' : 'red';
 
         try {

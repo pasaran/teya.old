@@ -255,6 +255,12 @@ subexpr :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+jpath :value [ ast.abs && !ast.steps ]
+    xr
+
+jpath :value [ !ast.steps ]
+    x%xid
+
 jpath :value [ ast.abs ]
     no.jpath( '%teya()', xr )
 

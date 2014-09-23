@@ -1,8 +1,7 @@
 [
     {
         data: 'Hello',
-        result: 'Hello',
-        known: true
+        result: 'Hello'
     },
     {
         data: {
@@ -10,8 +9,7 @@
         },
         result: {
             hello: 'Hello'
-        },
-        known: true
+        }
     }
 ]
 
