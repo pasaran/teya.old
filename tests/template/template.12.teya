@@ -1,0 +1,9 @@
+bar
+    .
+
+foo
+    bar -> .bar
+
+page
+    foo -> .foo
+

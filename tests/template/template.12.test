@@ -1,0 +1,9 @@
+{
+    data: {
+        foo: {
+            bar: 'Hello'
+        }
+    },
+    result: 'Hello'
+}
+
