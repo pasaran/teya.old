@@ -21,18 +21,19 @@ module
 
     %vars:define
 
-    function init_vars( x0 ) {
+    function init_vars( xr, x0 ) {
         %vars:def
     }
 
     %defs
 
-    module.exports = function( x0, id ) {
-        init_vars( x0 );
-
+    module.exports = function( xr, id ) {
+        var x0 = xr;
         var a0 = attrs();
 
-        return M[ id ]( x0, a0 );
+        init_vars( xr, x0 );
+
+        return M[ id ]( xr, x0, a0 );
     };
 
 module_vars :define [ !ast.is_empty() ]
@@ -54,7 +55,7 @@ def_template
 #     x%rid, r%rid, content, vars
 
 def_template :func_args
-    x%rid, a%aid, ca, cr%args:template_arg
+    xr, x%rid, a%aid, ca, cr%args:template_arg
 
 def_template :template_prologue [ ast.get_type() === 'attr' ]
     //  var a%aid = attrs();
@@ -201,13 +202,25 @@ template :name
 template :output [ ast.def.get_type() === 'attr' ]
     %params:template_param_def
     %content:content
-    %.:name( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+    %.:name( xr, %.:context, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+
+template :output [ ast.def.get_type() === 'string' || ast.def.get_type() === 'xml' ]
+    %params:template_param_def
+    //  %def.get_type()
+    %content:content
+    r%rid += %.:name( xr, %.:context, a%aid, a%content.rid, r%content.rid%params:template_param_value );
 
 template :output
     %params:template_param_def
     //  %def.get_type()
     %content:content
-    r%rid += %.:name( x%xid, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+    r%rid = %.:name( xr, %.:context, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+
+template :context [ ast.context ]
+    %context:value
+
+template :context
+    x%xid
 
 * :template_param_def [ ast.value && !ast.is_inline() ]
     //  %value.get_type()
@@ -241,6 +254,9 @@ subexpr :output
     %body:output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
+
+jpath :value [ ast.abs ]
+    no.jpath( '%teya()', xr )
 
 jpath :value
     no.jpath( '%teya()', x%xid )

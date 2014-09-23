@@ -1,0 +1,19 @@
+[
+    {
+        data: {
+            hello: 'Hello'
+        },
+        result: 'Hello'
+    },
+    {
+        data: {
+            hello: {
+                bye: 'Bye'
+            }
+        },
+        result: {
+            bye: 'Bye'
+        }
+    }
+]
+

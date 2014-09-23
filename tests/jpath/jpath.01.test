@@ -1,0 +1,17 @@
+[
+    {
+        data: 'Hello',
+        result: 'Hello',
+        known: true
+    },
+    {
+        data: {
+            hello: 'Hello'
+        },
+        result: {
+            hello: 'Hello'
+        },
+        known: true
+    }
+]
+
