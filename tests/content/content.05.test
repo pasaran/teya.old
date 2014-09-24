@@ -1,0 +1,4 @@
+{
+    result: '<div class="content" id="hello"><div class="wrapper">Hello</div></div>'
+}
+

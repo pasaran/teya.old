@@ -1,0 +1,12 @@
+content
+    <div class="content">
+        @..
+        <div class="wrapper">
+            $..
+
+page
+    content
+        @id = "hello"
+
+        "Hello"
+

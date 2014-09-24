@@ -443,6 +443,12 @@ param_content :output
     a%{rid}.merge( ca );
     r%rid += a%{rid}.close() + cr;
 
+param_content_attrs :output
+    a%{rid}.merge( ca );
+
+param_content_other :output
+    r%rid += a%{rid}.close() + cr;
+
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 * :default_value [ ast.get_type() === 'string' ]
