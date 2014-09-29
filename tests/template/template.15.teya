@@ -1,0 +1,18 @@
+list
+    <ul>
+        ...
+
+item
+    <li class="item">
+        ...
+
+list.item
+    item
+        @class += " list-item"
+        ...
+
+page
+    list
+        item
+            "First"
+
