@@ -14,7 +14,8 @@ var no = require( 'nommon' );
 require( 'no.colors' );
 
 var teya = require( '../lib/teya.js' );
-var Terror = require( '../lib/terror.js' );
+require( '../lib/actions.js' );
+require( '../lib/terror.js' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -111,7 +112,7 @@ for (var i = 0, l = files.length; i < l; i++) {
             }
 
         } catch ( e ) {
-            if ( test.error && ( e instanceof Terror ) && ( e.id === test.error.id ) && _.isEqual( test.error.params, e.params ) ) {
+            if ( test.error && ( e instanceof teya.Terror ) && ( e.id === test.error.id ) && _.isEqual( test.error.params, e.params ) ) {
                 oks++;
                 switch ( mode ) {
                     case 'compact':
