@@ -2,9 +2,9 @@
 
 module
     var no = require( 'nommon' );
-    var R = require( 'teya/lib/runtime.js' );
-    var M = {};
 
+    var R = require( 'teya/lib/runtime.js' );
+    //  Exports from runtime.
     var to_array = R.to_array;
     var to_string = R.to_string;
     var to_number = R.to_number;
@@ -19,22 +19,29 @@ module
     var string_to_attrvalue = R.string_to_attrvalue;
     var xml_to_attrvalue = R.xml_to_attrvalue;
 
-    %vars:define
+    var M = {};
+    var T = M.templates = {};
+    var V = M.vars = {};
 
-    function init_vars( xr, x0 ) {
-        %vars:def
-    }
+    %vars:define
 
     %defs
 
-    module.exports = function( xr, id ) {
+    M.init = function( xr, x0 ) {
+        %vars:def
+        %vars:export
+        %vars:init
+    }
+
+    M.run = function( xr, id ) {
         var x0 = xr;
+        M.init( xr, x0 );
+
         var a0 = attrs();
-
-        init_vars( xr, x0 );
-
-        return M[ id ]( xr, x0, a0 );
+        return T[ id ]( xr, x0, a0 );
     };
+
+    module.exports = M;
 
 module_vars :define [ !ast.is_empty() ]
     var %.:list;
@@ -49,7 +56,7 @@ def_template
         %body:output
         %.:template_epilogue
     }
-    M[ '%name' ] = %.:template_name;
+    T[ '%name' ] = %.:template_name;
 
 def_template :template_name
     t%{tid}_%{normalize_name()}
@@ -107,6 +114,12 @@ def_var :epilogue
 def_var :list
     %.:var_name
 
+def_var :export
+    V[ '%name' ] = %.:var_name;
+
+def_var :init [ ast.get_type() === 'module' ]
+    %{.:var_name}.init( xr, x0 );
+
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 block :content
@@ -139,6 +152,11 @@ block :output
     %defs:def
 
     %exprs:output
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+require :value
+    require( %filename:value )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
