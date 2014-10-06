@@ -1,0 +1,7 @@
+import "common.teya"
+
+page
+    list
+        item
+            "First"
+

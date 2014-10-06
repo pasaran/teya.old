@@ -1,0 +1,5 @@
+{
+    template: 'main',
+    result: '<ul class="common-list"><li class="common-list-item">First</li></ul>'
+}
+
