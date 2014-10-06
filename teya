@@ -36,23 +36,13 @@ if ( options.help ) {
         console.log( result );
     }
 
-} else if ( options.parse ) {
-    var files = get_teya_files( options );
-    for ( var i = 0, l = files.length; i < l; i++ ) {
-        var filename = files[ i ];
-
-        var ast = teya.parse( filename );
-        console.log( ast.to_string( false ) );
-    }
-
 } else if ( options.ast ) {
     var files = get_teya_files( options );
     for ( var i = 0, l = files.length; i < l; i++ ) {
         var filename = files[ i ];
 
         var ast = teya.parse( filename );
-        ast = teya.walk( ast );
-        console.log( ast.to_string( true ) );
+        console.log( ast.to_string() );
     }
 
 } else {
@@ -73,7 +63,6 @@ function get_options() {
         {
             'help': Boolean,
             'version': Boolean,
-            'parse': Boolean,
             'ast': Boolean,
             'compile': Boolean,
             'run': String,
@@ -82,7 +71,6 @@ function get_options() {
         {
             'h': '--help',
             'v': '--version',
-            'p': '--parse',
             'a': '--ast',
             'c': '--compile',
             'r': '--run',
