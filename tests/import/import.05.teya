@@ -1,0 +1,7 @@
+import "import.01.teya"
+
+main
+    list
+        item
+            "First"
+
