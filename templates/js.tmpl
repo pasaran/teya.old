@@ -53,12 +53,11 @@ import
     var M%iid = require( './%{filename}.js' );
     var T%iid = M%{iid}.templates;
     var V%iid = M%{iid}.vars;
-    %templates:import
 
-def_imported_template :import [ ast.namespace ]
+def_imported_template [ ast.namespace ]
     var t_%{normalize_name()} = T%{import.iid}[ '%shortname' ];
 
-def_imported_template :import
+def_imported_template
     var t_%{normalize_name()} = T[ '%name' ] = T%{import.iid}[ '%shortname' ];
 
 #   ---------------------------------------------------------------------------------------------------------------   #
