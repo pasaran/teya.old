@@ -1,0 +1,8 @@
+repeat :String ( ch = '.', n = 0 )
+    if n
+        ch
+        repeat ch, n - 1
+
+page
+    repeat "*", 10
+
