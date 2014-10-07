@@ -29,6 +29,7 @@ module
     %templates
 
     M.init = function( xr, x0 ) {
+        %imports:init
         %vars:def
         %vars:export
         %vars:init
@@ -53,6 +54,9 @@ import
     var M%iid = require( './%{filename}.js' );
     var T%iid = M%{iid}.templates;
     var V%iid = M%{iid}.vars;
+
+import :init
+    M%{iid}.init( xr, x0 );
 
 def_imported_template [ ast.namespace ]
     var t_%{normalize_name()} = T%{import.iid}[ '%shortname' ];
