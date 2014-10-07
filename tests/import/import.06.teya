@@ -1,0 +1,6 @@
+import "hello-foo.teya"
+import "hello-bar.teya"
+
+page
+    hello
+
