@@ -25,6 +25,7 @@ module
     %imports
 
     %vars:define
+    %funcs:define
 
     %templates
 
@@ -101,8 +102,8 @@ def_template :template_epilogue
 def_arg :default [ ast.default ]
     if ( %.:var_name == null ) { %.:var_name = %default:cast; }
 
-def_arg :default
-    if ( %.:var_name == null ) { %.:var_name = %.:default_value; }
+# def_arg :default
+#     if ( %.:var_name == null ) { %.:var_name = %.:default_value; }
 
 def_arg :template_arg
     , %.:var_name
@@ -137,6 +138,32 @@ def_var :export
 
 def_var :init [ ast.get_type() === 'module' ]
     %{.:var_name}.init( xr, x0 );
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+def_func :define
+    function f_%{normalize_name()}( xr, x0%args:func_arg ) {
+        %args:default
+        %.:func_prologue
+        %body:output
+        %.:func_epilogue
+    }
+
+def_arg :func_arg
+    , %.:var_name
+
+def_func :func_prologue [ ast.get_type() === 'attr' ]
+    //  var a%aid = attrs();
+
+def_func :func_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+
+def_func :func_prologue
+    var r%rid = %.:default_value;
+
+def_func :func_epilogue [ ast.get_type() === 'attr' ]
+
+def_func :func_epilogue
+    return r%rid;
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -354,10 +381,10 @@ inline_var :value
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 inline_func :value
-    %name( %args )
+    f_%{def.normalize_name()}( xr, x%rid, %args )
 
 inline_func_arg
-    %value:value
+    %value:cast
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
