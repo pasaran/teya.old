@@ -399,6 +399,9 @@ false :value
 object :output
     %body:output
 
+inline_object :value
+    { %body:value }
+
 inline_pair :output [ ast.value.is_inline() ]
     r%rid[ %key:value ] = %value:value;
 
@@ -407,10 +410,16 @@ pair :output
     %value:output
     r%rid[ %key:value ] = r%value.rid;
 
+inline_pair :value
+    %key:value: %value:value
+
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 array :output
     %body:output
+
+inline_array :value
+    [ %body:value ]
 
 #   FIXME: Хочется иметь один push на все item'ы.
 #   Сейчас это невозможно сделать из-за текущей реализации шаблонов.
