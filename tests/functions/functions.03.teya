@@ -1,0 +1,7 @@
+func sum( a: Number, b = 1 )
+    a + b
+
+page
+    sum( 42 )
+    sum( 42, 24 )
+

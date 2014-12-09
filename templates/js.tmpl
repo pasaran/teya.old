@@ -142,15 +142,16 @@ def_var :init [ ast.get_type() === 'module' ]
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 def_func :define
-    function f_%{normalize_name()}( xr, x0%args:func_arg ) {
+    //  %get_full_name()
+    function %{.:func_name}( xr, x0%args:func_arg ) {
         %args:default
         %.:func_prologue
         %body:output
         %.:func_epilogue
     }
 
-def_arg :func_arg
-    , %.:var_name
+def_func :func_name
+    f_%{normalize_name()}_%fid
 
 def_func :func_prologue [ ast.get_type() === 'attr' ]
     //  var a%aid = attrs();
@@ -164,6 +165,9 @@ def_func :func_epilogue [ ast.get_type() === 'attr' ]
 
 def_func :func_epilogue
     return r%rid;
+
+def_arg :func_arg
+    , %.:var_name
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -381,7 +385,10 @@ inline_var :value
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 inline_func :value
-    f_%{def.normalize_name()}( xr, x%rid, %args )
+    %{.:func_name}( xr, x%rid, %args )
+
+inline_func :func_name
+    f_%{def.normalize_name()}_%def.fid
 
 inline_func_arg
     %value:cast

@@ -1,0 +1,10 @@
+func foo( a: Object )
+    "object"
+
+func foo( a: Array )
+    "array"
+
+page
+    foo( { "foo": 42 } )
+    foo( [ 1, 2, 3 ] )
+

@@ -1,0 +1,10 @@
+func slice( s: String, from: Number, to: Number )
+    "first"
+
+func slice( s: String, from: Number )
+    "second"
+
+page
+    slice( "foo", 2, 3 )
+    slice( "foo", 2 )
+
