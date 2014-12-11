@@ -1,10 +1,10 @@
-func slice( s: String, from: Number, to: Number )
+func foo( s: String, from: Number, to: Number )
     "first"
 
-func slice( s: String, from: Number )
+func foo( s: String, from: Number )
     "second"
 
 page
-    slice( "foo", 2, 3 )
-    slice( "foo", 2 )
+    foo( "foo", 2, 3 )
+    foo( "foo", 2 )
 

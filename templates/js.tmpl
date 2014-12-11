@@ -19,6 +19,8 @@ module
     var string_to_attrvalue = R.string_to_attrvalue;
     var xml_to_attrvalue = R.xml_to_attrvalue;
 
+    var I = R.internal_funcs;
+
     var M = {};
     var T = M.templates = {};
     var V = M.vars = {};
@@ -141,7 +143,7 @@ def_var :init [ ast.get_type() === 'module' ]
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-def_func :define
+def_func :define [ ast.is_user ]
     //  %get_full_name()
     function %{.:func_name}( xr, x0%args:func_arg ) {
         %args:default
@@ -384,14 +386,22 @@ inline_var :value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-inline_func :value
+inline_func :value [ ast.def.is_user ]
     %{.:func_name}( xr, x%rid, %args )
+
+inline_func :value [ ast.def.is_internal ]
+    %.:internal
 
 inline_func :func_name
     f_%{def.normalize_name()}_%def.fid
 
 inline_func_arg
     %value:cast
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_func :internal [ ast.name === 'slice' ]
+    I.slice( %args )
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 

@@ -1,0 +1,7 @@
+page
+    hello = "Hello, World!"
+
+    slice( hello, 1, 5 )
+    "|"
+    slice( hello, 7 )
+
