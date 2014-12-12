@@ -1,0 +1,6 @@
+import "functions.05.string.js"
+    substr( String, Number, Number ): String
+
+page
+    substr( "Hello, World!", 7, 5 )
+

@@ -53,12 +53,15 @@ module_vars :define [ !ast.is_empty() ]
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+import [ ast.is_js ]
+    var M%iid = require( './%filename' );
+
 import
     var M%iid = require( './%{filename}.js' );
     var T%iid = M%{iid}.templates;
     var V%iid = M%{iid}.vars;
 
-import :init
+import :init [ !ast.is_js ]
     M%{iid}.init( xr, x0 );
 
 def_imported_template [ ast.namespace ]
@@ -385,6 +388,9 @@ inline_var :value
     %def:var_name
 
 #   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_func :value [ ast.def.is_external ]
+    M%{def.parent.parent.iid}.%name( %args )
 
 inline_func :value [ ast.def.is_user ]
     %{.:func_name}( xr, x%rid, %args )
