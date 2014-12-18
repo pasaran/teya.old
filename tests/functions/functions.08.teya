@@ -1,0 +1,13 @@
+func repeat( n: Number, s: String ): String
+    if n
+        s
+        repeat( n - 1, s )
+
+page
+    repeat( 5, "*" )
+    "|"
+    repeat( 0, "*" )
+    "|"
+    repeat( 1, "*" )
+
+

@@ -1,0 +1,13 @@
+func fact( n = 0 )
+    if n
+        n * fact( n - 1 )
+    else
+        1
+
+page
+    fact( 5 )
+    "|"
+    fact( 1 )
+    "|"
+    fact( 0 )
+
