@@ -1,7 +1,7 @@
-func foo( a: Object )
+func foo( a: object )
     "object"
 
-func foo( a: Array )
+func foo( a: array )
     "array"
 
 page

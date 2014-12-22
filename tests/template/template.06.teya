@@ -1,8 +1,8 @@
-wrapper ( content: Xml )
+wrapper ( content: xml )
     <div class="wrapper">
         content
 
-icon ( name: String )
+icon ( name: string )
     <img src="{ name }.png">
 
 page

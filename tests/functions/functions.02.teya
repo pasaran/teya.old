@@ -1,7 +1,7 @@
-func foo( s: String, from: Number, to: Number )
+func foo( s: string, from: number, to: number )
     "first"
 
-func foo( s: String, from: Number )
+func foo( s: string, from: number )
     "second"
 
 page

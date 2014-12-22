@@ -1,4 +1,4 @@
-icon ( name: String, attrs: Attr )
+icon ( name: string, attrs: attr )
     <img src="{ name }.png">
         attrs
 

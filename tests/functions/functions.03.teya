@@ -1,4 +1,4 @@
-func sum( a: Number, b = 1 )
+func sum( a: number, b = 1 )
     a + b
 
 page

@@ -1,4 +1,4 @@
-func repeat( n: Number, s: String ): String
+func repeat( n: number, s: string ): string
     if n
         s
         repeat( n - 1, s )

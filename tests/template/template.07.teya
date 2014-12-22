@@ -1,4 +1,4 @@
-icon ( name: String, width: Number, height: Number )
+icon ( name: string, width: number, height: number )
     <img src="{ name }.png" width="{ width }" height="{ height }">
 
 page

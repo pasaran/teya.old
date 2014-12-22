@@ -1,5 +1,5 @@
 import "functions.05.string.js"
-    substr( String, Number, Number ): String
+    substr( string, number, number ): string
 
 page
     substr( "Hello, World!", 7, 5 )

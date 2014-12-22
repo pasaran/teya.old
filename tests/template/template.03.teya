@@ -1,4 +1,4 @@
-icon ( name: String = "left" )
+icon ( name: string = "left" )
     <img src="{ name }.png">
 
 page
