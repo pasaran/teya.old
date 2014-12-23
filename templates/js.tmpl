@@ -578,6 +578,9 @@ param_content_other :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+inline_expr :cast [ ast.to_type === 'any' ]
+    %.:value
+
 inline_expr :cast [ ast.from_type === 'xml' && ast.to_type === 'string' ]
     %.:value
 
