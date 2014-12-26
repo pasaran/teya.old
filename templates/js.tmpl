@@ -256,6 +256,9 @@ value :cast
 value :value
     %value:value
 
+value :output [ ast.get_type() === 'none' ]
+    %value:value;
+
 value :output [ ast.get_type() === 'string' || ast.get_type() === 'xml' ]
     r%rid += %value:cast;
 
@@ -392,6 +395,10 @@ inline_var :value
 inline_func :value [ ast.def.is_external ]
     M%{def.parent.parent.iid}.%name( %args )
 
+inline_func :value [ ast.def.is_user && ast.args.is_empty() ]
+    %{.:func_name}( xr, x%rid )
+
+# FIXME. Сделать отдельный шаблон для параметров и ставить запятую там.
 inline_func :value [ ast.def.is_user ]
     %{.:func_name}( xr, x%rid, %args )
 
@@ -405,6 +412,9 @@ inline_func_arg
     %value:cast
 
 #   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_func :internal [ ast.name === 'log' ]
+    console.log( %args )
 
 inline_func :internal [ ast.name === 'slice' ]
     I.slice( %args )

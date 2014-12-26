@@ -1,0 +1,16 @@
+//  Выражение с типом none не влияет на результат.
+
+func foo()
+    log( 'foo()' )
+
+    {
+        "foo": 42
+    }
+
+page
+    foo = foo()
+
+    log( foo )
+
+    foo
+

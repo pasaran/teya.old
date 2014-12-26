@@ -1,0 +1,7 @@
+import "functions.11.js"
+    sum( ...string ): string
+
+page
+    sum( 1, 2, 3 )
+    sum( "one", "two", "three" )
+
