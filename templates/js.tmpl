@@ -146,11 +146,20 @@ def_var :init [ ast.get_type() === 'module' ]
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
+def_func :define [ ast.is_user && ast.body.is_inline() ]
+    //  %get_full_name()
+    function %{.:func_name}( xr, x0%args:func_arg ) {
+        %args:default
+#   FIXME: Возможно, тут должно быть body:cast.
+        return %body:value;
+    }
+
 def_func :define [ ast.is_user ]
     //  %get_full_name()
     function %{.:func_name}( xr, x0%args:func_arg ) {
         %args:default
         %.:func_prologue
+        //  %body.is_inline()
         %body:output
         %.:func_epilogue
     }
@@ -179,6 +188,9 @@ def_arg :func_arg
 block :content
     var r%rid = '', a%rid = content_attrs();
     %.:output
+
+block :value
+    %exprs:value
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -219,6 +231,12 @@ if :value [ ast.is_inline() && ast.elses.is_empty() ]
 
 if :value [ ast.is_inline() ]
     ( %condition:value ) ? %then.exprs:cast : %elses:cast
+
+if :cast
+    %.:value
+
+if :output [ ast.is_inline() ]
+    %.:value
 
 if :output
     if ( %condition:value ) %then:if_body %elses:if_body
@@ -432,6 +450,9 @@ false :value
 object :output
     %body:output
 
+object :value [ ast.body.is_inline() ]
+    { %body:value }
+
 inline_object :value
     { %body:value }
 
@@ -442,6 +463,9 @@ pair :output
     %value:prologue
     %value:output
     r%rid[ %key:value ] = r%value.rid;
+
+pair :value
+    %key:value: %value:value
 
 inline_pair :value
     %key:value: %value:value
@@ -535,17 +559,34 @@ xml_attr :output
 close_attrs :output
     r%rid += a%{rid}.close();
 
+attr :output [ ast.value.get_cast_type() === 'json' ]
+#  FIXME: Или тут нужно %value:cast?
+    a%{rid}.set_xml( '%name:cast', JSON.stringify( %value:value ) );
+
 attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() && ast.op === '+=' ]
     a%{rid}.add_xml( '%name:cast', %value:cast );
-
-attr :output [ ast.value.is_inline() && ast.op === '+=' ]
-    a%{rid}.add_string( '%name:cast', %value:cast );
 
 attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() ]
     a%{rid}.set_xml( '%name:cast', %value:cast );
 
+attr :output [ ast.value.is_inline() && ast.op === '+=' ]
+    a%{rid}.add_string( '%name:cast', %value:cast );
+
 attr :output [ ast.value.is_inline() ]
     a%{rid}.set_string( '%name:cast', %value:cast );
+
+attr :output
+    %value:prologue
+    %value:output
+    %.:epilogue
+
+#attr :epilogue [ ast.value.get_type() === 'attr' ]
+#    //  @%name: %value.get_type()
+#    var %.:var_name = a%{value.rid};
+
+attr :epilogue
+    //  @%name: %value.get_type()
+    a%{rid}.set_string( '%name:cast', r%value.rid );
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
@@ -562,25 +603,25 @@ param_content_other :output
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-* :default_value [ ast.get_type() === 'string' ]
+* :default_value [ ast.get_cast_type() === 'string' ]
     ''
 
-* :default_value [ ast.get_type() === 'xml' ]
+* :default_value [ ast.get_cast_type() === 'xml' ]
     ''
 
-* :default_value [ ast.get_type() === 'number' ]
+* :default_value [ ast.get_cast_type() === 'number' ]
     0
 
-* :default_value [ ast.get_type() === 'boolean' ]
+* :default_value [ ast.get_cast_type() === 'boolean' ]
     false
 
-* :default_value [ ast.get_type() === 'object' ]
+* :default_value [ ast.get_cast_type() === 'object' ]
     {}
 
-* :default_value [ ast.get_type() === 'array' ]
+* :default_value [ ast.get_cast_type() === 'array' ]
     []
 
-* :default_value [ ast.get_type() === 'json' ]
+* :default_value [ ast.get_cast_type() === 'json' ]
     null
 
 * :default_value
