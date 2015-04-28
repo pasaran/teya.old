@@ -414,11 +414,11 @@ inline_func :value [ ast.def.is_external ]
     M%{def.parent.parent.iid}.%name( %args )
 
 inline_func :value [ ast.def.is_user && ast.args.is_empty() ]
-    %{.:func_name}( xr, x%rid )
+    %{.:func_name}( xr, x%xid )
 
 # FIXME. Сделать отдельный шаблон для параметров и ставить запятую там.
 inline_func :value [ ast.def.is_user ]
-    %{.:func_name}( xr, x%rid, %args )
+    %{.:func_name}( xr, x%xid, %args )
 
 inline_func :value [ ast.def.is_internal ]
     %.:internal
@@ -474,6 +474,9 @@ inline_pair :value
 
 array :output
     %body:output
+
+array :value [ ast.body.is_inline() ]
+    [ %body:value ]
 
 inline_array :value
     [ %body:value ]
