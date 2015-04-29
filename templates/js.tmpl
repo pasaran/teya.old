@@ -147,16 +147,16 @@ def_var :init [ ast.get_type() === 'module' ]
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 def_func :define [ ast.is_user && ast.body.is_inline() ]
-    //  %get_full_name()
-    function %{.:func_name}( xr, x0%args:func_arg ) {
+    //  %get_full_name() : %get_type()
+    function %{.:func_name}( xr, x0, a0%args:func_arg ) {
         %args:default
 #   FIXME: Возможно, тут должно быть body:cast.
         return %body:value;
     }
 
 def_func :define [ ast.is_user ]
-    //  %get_full_name()
-    function %{.:func_name}( xr, x0%args:func_arg ) {
+    //  %get_full_name() : %get_type()
+    function %{.:func_name}( xr, x0, a0%args:func_arg ) {
         %args:default
         %.:func_prologue
         //  %body.is_inline()
@@ -414,11 +414,11 @@ inline_func :value [ ast.def.is_external ]
     M%{def.parent.parent.iid}.%name( %args )
 
 inline_func :value [ ast.def.is_user && ast.args.is_empty() ]
-    %{.:func_name}( xr, x%xid )
+    %{.:func_name}( xr, x%xid, a%aid )
 
 # FIXME. Сделать отдельный шаблон для параметров и ставить запятую там.
 inline_func :value [ ast.def.is_user ]
-    %{.:func_name}( xr, x%xid, %args )
+    %{.:func_name}( xr, x%xid, a%aid, %args )
 
 inline_func :value [ ast.def.is_internal ]
     %.:internal
