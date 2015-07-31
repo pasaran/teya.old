@@ -1,0 +1,689 @@
+module.exports = function( asts ) {
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.module.js = function( ast ) {
+    return `
+        var no = require( 'nommon' );
+
+        var R = require( 'teya/lib/runtime.js' );
+        //  Exports from runtime.
+        var to_array = R.to_array;
+        var to_string = R.to_string;
+        var to_number = R.to_number;
+        var to_xml = R.to_xml;
+        var copy_attrs = R.copy_attrs;
+        var to_tagname = R.to_tagname;
+        var attrs = R.attrs;
+        var content_attrs = R.content_attrs;
+        var is_empty_tag = R.is_empty_tag;
+        var string_attr = R.string_attr;
+        var xml_attr = R.xml_attr;
+        var string_to_attrvalue = R.string_to_attrvalue;
+        var xml_to_attrvalue = R.xml_to_attrvalue;
+
+        var I = R.internal_funcs;
+
+        var M = {};
+        var T = M.templates = {};
+        var V = M.vars = {};
+
+        ${ ast.imports.js() }
+
+        ${ ast.vars.js__define() }
+        ${ ast.funcs.js__define() }
+
+        ${ ast.templates.js() }
+
+        M.init = function( xr, x0 ) {
+            ${ ast.imports.js__init() }
+            ${ ast.vars.js__def() }
+            ${ ast.vars.js__export() }
+            ${ ast.vars.js__init() }
+        }
+
+        M.run = function( xr, id ) {
+            var x0 = xr;
+            M.init( xr, x0 );
+
+            var a0 = attrs();
+            return T[ id ]( xr, x0, a0 );
+        };
+
+        module.exports = M;
+    `
+}
+
+asts.module_vars.js__define = function( ast ) {
+    if ( !ast.is_empty() ) {
+        return `var ${ ast.js__list() }`
+    }
+
+    return '';
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.import.js = function( ast ) {
+    var iid = ast.iid;
+
+    if ( ast.is_js ) {
+        return `
+            var M${ iid } = require( './${ ast.filename }' );
+        `
+    }
+
+    return `
+        var M${ iid } = require( './${ ast.filename }.js' );
+        var T${ iid } = M${ iid }.templates;
+        var V${ iid } = M${ iid }.vars;
+    `
+}
+
+asts.import.js__init = function( ast ) {
+    if ( !ast.is_js ) {
+        return `
+            M${ ast.iid }.init( xr, x0 );
+        `
+    }
+
+    return '';
+}
+
+asts.def_imported_template.js = function( ast ) {
+    if ( ast.namespace ) {
+        return `
+            var t_${ ast.normalize_name() } = T${ ast.import.iid }[ '${ ast.shortname }' ];
+        `
+    }
+
+    return `
+        var t_${ ast.normalize_name() } = T[ '${ ast.name }' ] = T${ ast.import.iid }[ '${ ast.shortname }' ];
+    `
+}
+
+/*
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+def_template
+    //  %name: %get_type()
+    function %{.:template_name}( %.:func_args ) {
+        %args:default
+        %.:template_prologue
+        %body:output
+        %.:template_epilogue
+    }
+    T[ '%name' ] = %.:template_name;
+
+def_template :template_name
+    t%{tid}_%{normalize_name()}
+
+# def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+#     x%rid, r%rid, content, vars
+
+def_template :func_args
+    xr, x%rid, a%aid, ca, cr%args:template_arg
+
+def_template :template_prologue [ ast.get_type() === 'attr' ]
+    //  var a%aid = attrs();
+
+def_template :template_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+
+def_template :template_prologue
+    var r%rid = %.:default_value;
+
+def_template :template_epilogue [ ast.get_type() === 'attr' ]
+
+def_template :template_epilogue
+    return r%rid;
+
+def_arg :default [ ast.default ]
+    if ( %.:var_name == null ) { %.:var_name = %default:cast; }
+
+# def_arg :default
+#     if ( %.:var_name == null ) { %.:var_name = %.:default_value; }
+
+def_arg :template_arg
+    , %.:var_name
+
+* :var_name
+    v%{vid}_%normalize_name()
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+def_var :def [ ast.value.is_inline() ]
+    //  %name: %get_type()
+    var %.:var_name = %value:value;
+
+def_var :def
+    %value:prologue
+    %value:output
+    %.:epilogue
+
+def_var :epilogue [ ast.value.get_type() === 'attr' ]
+    //  %name: %get_type()
+    var %.:var_name = a%{value.rid};
+
+def_var :epilogue
+    //  %name: %get_type()
+    var %.:var_name = r%value.rid;
+
+def_var :list
+    %.:var_name
+
+def_var :export
+    V[ '%name' ] = %.:var_name;
+
+def_var :init [ ast.get_type() === 'module' ]
+    %{.:var_name}.init( xr, x0 );
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+def_func :define [ ast.is_user && ast.body.is_inline() ]
+    //  %get_full_name() : %get_type()
+    function %{.:func_name}( xr, x0, a0%args:func_arg ) {
+        %args:default
+#   FIXME: Возможно, тут должно быть body:cast.
+        return %body:value;
+    }
+
+def_func :define [ ast.is_user ]
+    //  %get_full_name() : %get_type()
+    function %{.:func_name}( xr, x0, a0%args:func_arg ) {
+        %args:default
+        %.:func_prologue
+        //  %body.is_inline()
+        %body:output
+        %.:func_epilogue
+    }
+
+def_func :func_name
+    f_%{normalize_name()}_%fid
+
+def_func :func_prologue [ ast.get_type() === 'attr' ]
+    //  var a%aid = attrs();
+
+def_func :func_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+
+def_func :func_prologue
+    var r%rid = %.:default_value;
+
+def_func :func_epilogue [ ast.get_type() === 'attr' ]
+
+def_func :func_epilogue
+    return r%rid;
+
+def_arg :func_arg
+    , %.:var_name
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+block :content
+    var r%rid = '', a%rid = content_attrs();
+    %.:output
+
+block :value
+    %exprs:value
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+* :prologue [ ast.get_type() === 'object' ]
+    var r%rid = {};
+
+* :prologue [ ast.get_type() === 'array' ]
+    var r%rid = [];
+
+* :prologue [ ast.get_type() === 'attr' ]
+    var a%aid = attrs();
+
+* :prologue [ ast.get_type() === 'json' ]
+    var r%rid;
+
+* :prologue [ ast.get_type() === 'xml' ]
+    var r%rid = '', a%aid = attrs();
+
+* :prologue
+    var r%rid = '';
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+block :output
+    %defs:def
+
+    %exprs:output
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+import :def
+    require( %filename:value )
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+if :value [ ast.is_inline() && ast.elses.is_empty() ]
+    ( %condition:value ) ? %then.exprs:cast : %.:default_value
+
+if :value [ ast.is_inline() ]
+    ( %condition:value ) ? %then.exprs:cast : %elses:cast
+
+if :cast
+    %.:value
+
+if :output [ ast.is_inline() ]
+    %.:value
+
+if :output
+    if ( %condition:value ) %then:if_body %elses:if_body
+
+block :if_body
+    {
+        %.:output
+    }
+
+else_if :if_body
+    else if ( %condition:value ) %body:if_body
+
+else :cast
+    %body.exprs:cast
+
+else :if_body
+    else {
+        %body:output
+    }
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+for :output
+    var items%xid = to_array( %selector:value );
+    for ( var i%xid = 0, l%xid = items%{xid}.length; i%xid < l%xid; i%xid++ ) {
+        var x%body.xid = items%xid[ i%xid ];
+        %body:output
+    }
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+value :cast
+    %value:cast
+
+value :value
+    %value:value
+
+value :output [ ast.get_type() === 'none' ]
+    %value:value;
+
+value :output [ ast.get_type() === 'string' || ast.get_type() === 'xml' ]
+    r%rid += %value:cast;
+
+value :output [ ast.get_type() === 'attr' ]
+    a%{rid}.copy( %value:value );
+
+value :output [ !ast.to_type ]
+#  FIXME: А почему тут было %value:cast?
+    r%rid = %value:value;
+
+value :output
+    r%rid += %value:cast;
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+template :name
+    t%{def.tid}_%{normalize_name()}
+
+template :output [ ast.def.get_type() === 'attr' ]
+    %params:template_param_def
+    %content:content
+    %.:name( xr, %.:context, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+
+template :output [ ast.def.get_type() === 'string' || ast.def.get_type() === 'xml' ]
+    %params:template_param_def
+    //  %def.get_type()
+    %content:content
+    r%rid += %.:name( xr, %.:context, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+
+template :output
+    %params:template_param_def
+    //  %def.get_type()
+    %content:content
+    r%rid = %.:name( xr, %.:context, a%aid, a%content.rid, r%content.rid%params:template_param_value );
+
+template :context [ ast.context ]
+    %context:value
+
+template :context
+    x%xid
+
+* :template_param_def [ ast.value && !ast.is_inline() ]
+    //  %value.get_type()
+    %value:prologue
+    %value:output
+    %.:template_param_epilogue
+
+* :template_param_epilogue [ ast.value.get_type() === 'attr' ]
+    //  %name: %get_type()
+    var %.:param_name = a%{value.rid};
+
+* :template_param_epilogue
+    //  %name: %get_type()
+    var %.:param_name = r%value.rid;
+
+template_param :template_param_value [ ast.value && ast.value.is_inline() ]
+    , %value:cast
+
+template_param :template_param_value [ ast.value ]
+    , %.:param_name
+
+template_param :template_param_value
+    , null
+
+* :param_name
+    z%{rid}_%normalize_name()
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+subexpr :output
+    %body:output
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+jpath :value [ ast.abs && !ast.steps ]
+    xr
+
+jpath :value [ !ast.steps ]
+    x%xid
+
+jpath :value [ ast.abs ]
+    no.jpath( '%teya()', xr )
+
+jpath :value
+    no.jpath( '%teya()', x%xid )
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_binop :cast
+    %left:cast %op %right:cast
+
+inline_binop :value
+    %left:value %op %right:value
+
+inline_unop :value
+    %op%left:value
+
+inline_ternary :value
+    ( %condition:value ) ? %then:value : %else:value
+
+inline_number :value
+    %value
+
+inline_subexpr :value
+    ( %expr:value )
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_string :cast
+    %value:cast
+
+inline_string :value
+    %value:cast
+
+string_literal :name
+    %stringify()
+
+string_literal :cast
+    %.:value
+
+string_literal :value
+    '%stringify()'
+
+string_expr :value
+    %expr:cast
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_var :value
+    %def:var_name
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_func :value [ ast.def.is_external ]
+    M%{def.parent.parent.iid}.%name( %args )
+
+inline_func :value [ ast.def.is_user && ast.args.is_empty() ]
+    %{.:func_name}( xr, x%xid, a%aid )
+
+# FIXME. Сделать отдельный шаблон для параметров и ставить запятую там.
+inline_func :value [ ast.def.is_user ]
+    %{.:func_name}( xr, x%xid, a%aid, %args )
+
+inline_func :value [ ast.def.is_internal ]
+    %.:internal
+
+inline_func :func_name
+    f_%{def.normalize_name()}_%def.fid
+
+inline_func_arg
+    %value:cast
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_func :internal [ ast.name === 'log' ]
+    console.log( %args )
+
+inline_func :internal [ ast.name === 'slice' ]
+    I.slice( %args )
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+true :value
+    true
+
+false :value
+    false
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+object :output
+    %body:output
+
+object :value [ ast.body.is_inline() ]
+    { %body:value }
+
+inline_object :value
+    { %body:value }
+
+inline_pair :output [ ast.value.is_inline() ]
+    r%rid[ %key:value ] = %value:value;
+
+pair :output
+    %value:prologue
+    %value:output
+    r%rid[ %key:value ] = r%value.rid;
+
+pair :value
+    %key:value: %value:value
+
+inline_pair :value
+    %key:value: %value:value
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+array :output
+    %body:output
+
+array :value [ ast.body.is_inline() ]
+    [ %body:value ]
+
+inline_array :value
+    [ %body:value ]
+
+inline_item :value
+    %value:value
+
+#   FIXME: Хочется иметь один push на все item'ы.
+#   Сейчас это невозможно сделать из-за текущей реализации шаблонов.
+#
+inline_item :output
+    r%{rid}.push( %value:value );
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+xml :output
+    %.:start
+    %content:output
+    %.:end
+
+xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false ) ]
+    r%rid += '<%name:name';
+    a%aid = attrs( '%name:name', {
+        %attrs:output
+    } );
+
+xml :start [ ast.name.is_const() ]
+    r%rid += %.:static_name;
+
+xml :start [ ast.content.starts_with_attr() !== false ]
+    var n%nid = to_tagname( %name:cast );
+    r%rid += '<' + n%nid;
+    a%aid = attrs( n%nid, {
+        %attrs:output
+    } );
+
+xml :start
+    var n%nid = to_tagname( %name:cast );
+    r%rid += %.:dynamic_name;
+
+xml :close_start_tag [ ast.is_empty_tag ]
+    />
+
+xml :close_start_tag
+    >
+
+xml :static_name [ ast.attrs.is_empty() ]
+    '<%{name:name}%.:close_start_tag'
+
+xml :static_name
+    '<%name:name' + %attrs:inline + '%.:close_start_tag'
+
+xml :dynamic_name [ ast.attrs.is_empty() ]
+    '<' + n%nid + ( is_empty_tag( n%nid ) ? '/>' : '>' )
+
+xml :dynamic_name
+    '<' + n%nid + %attrs:inline + ( is_empty_tag( n%nid ) ? '/>' : '>' )
+
+xml :end [ ast.name.is_const() && ast.is_empty_tag ]
+
+xml :end [ ast.name.is_const() ]
+    r%rid += '</%name:name>';
+
+xml :end
+    if ( !is_empty_tag( n%nid ) ) {
+        r%rid += '</' + n%nid + '>';
+    }
+
+xml_attr :inline [ ast.value.get_type() === 'xml' ]
+    " %name='" + xml_to_attrvalue( %value:cast ) + "'"
+
+xml_attr :inline
+    " %name='" + string_to_attrvalue( %value:cast ) + "'"
+
+xml_attr :output [ ast.value.get_type() === 'xml' ]
+#   FIXME: Тут, видимо, должно быть %value:cast?
+    '%name': xml_attr( %value:value )
+
+xml_attr :output
+#   FIXME: Тут, видимо, должно быть %value:cast?
+    '%name': string_attr( %value:value )
+
+close_attrs :output
+    r%rid += a%{rid}.close();
+
+attr :output [ ast.value.get_cast_type() === 'json' ]
+#  FIXME: Или тут нужно %value:cast?
+    a%{rid}.set_xml( '%name:cast', JSON.stringify( %value:value ) );
+
+attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() && ast.op === '+=' ]
+    a%{rid}.add_xml( '%name:cast', %value:cast );
+
+attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() ]
+    a%{rid}.set_xml( '%name:cast', %value:cast );
+
+attr :output [ ast.value.is_inline() && ast.op === '+=' ]
+    a%{rid}.add_string( '%name:cast', %value:cast );
+
+attr :output [ ast.value.is_inline() ]
+    a%{rid}.set_string( '%name:cast', %value:cast );
+
+attr :output
+    %value:prologue
+    %value:output
+    %.:epilogue
+
+#attr :epilogue [ ast.value.get_type() === 'attr' ]
+#    //  @%name: %value.get_type()
+#    var %.:var_name = a%{value.rid};
+
+attr :epilogue
+    //  @%name: %value.get_type()
+    a%{rid}.set_string( '%name:cast', r%value.rid );
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+param_content :output
+
+    a%{rid}.merge( ca );
+    r%rid += a%{rid}.close() + cr;
+
+param_content_attrs :output
+    a%{rid}.merge( ca );
+
+param_content_other :output
+    r%rid += a%{rid}.close() + cr;
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+* :default_value [ ast.get_cast_type() === 'string' ]
+    ''
+
+* :default_value [ ast.get_cast_type() === 'xml' ]
+    ''
+
+* :default_value [ ast.get_cast_type() === 'number' ]
+    0
+
+* :default_value [ ast.get_cast_type() === 'boolean' ]
+    false
+
+* :default_value [ ast.get_cast_type() === 'object' ]
+    {}
+
+* :default_value [ ast.get_cast_type() === 'array' ]
+    []
+
+* :default_value [ ast.get_cast_type() === 'json' ]
+    null
+
+* :default_value
+    ''
+
+#   ---------------------------------------------------------------------------------------------------------------   #
+
+inline_expr :cast [ ast.to_type === 'any' ]
+    %.:value
+
+inline_expr :cast [ ast.from_type === 'xml' && ast.to_type === 'string' ]
+    %.:value
+
+inline_expr :cast [ ast.to_type === 'string' || ast.to_type === 'xml' || ast.to_type === 'number' ]
+    to_%{to_type}( %.:value )
+
+inline_expr :cast [ ast.from_type === 'json' ]
+    to_%{to_type}( %.:value )
+
+inline_expr :cast [ ast.from_type && ast.to_type ]
+    %{from_type}_to_%{to_type}( %.:value )
+
+inline_expr :cast
+    %.:value
+*/
+
+};
+

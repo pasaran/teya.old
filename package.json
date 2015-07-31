@@ -17,6 +17,9 @@
         "no.colors": "0.0.1",
         "nommon": "0.0.28"
     },
+    "devDependencies": {
+        "babel": "5.8.9"
+    },
     "engines": {
         "node": "*"
     },
