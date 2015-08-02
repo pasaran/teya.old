@@ -102,36 +102,45 @@ asts.def_imported_template.js = function( ast ) {
     `
 }
 
-/*
 
 #   ---------------------------------------------------------------------------------------------------------------   #
 
-def_template
-    //  %name: %get_type()
-    function %{.:template_name}( %.:func_args ) {
-        %args:default
-        %.:template_prologue
-        %body:output
-        %.:template_epilogue
+asts.def_template.js = function( ast ) {
+    return `
+        //  ${ ast.name }: ${ ast.get_type() }
+        function ${ ast.js__template_name() }( ${ ast.js__func_args() } ) {
+            ${ ast.args.js__default() }
+            ${ ast.js__template_prologue() }
+            ${ ast.body.js__output() }
+            ${ ast.js__template_epilogue() }
+        }
+        T[ '${ ast.name }' ] = ${ ast.js__template_name() };
+    `
+}
+
+asts.def_template.js__template_name = function( ast ) {
+    return `t${ ast.tid }_${ ast.normalize_name() }`
+}
+
+//  def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+//      x%rid, r%rid, content, vars
+
+asts.def_template.js__func_args = function( ast ) {
+    return `xr, x${ ast.rid }, a${ ast.aid }, ca, cr${ ast.args.js__template_arg() }`
+}
+
+asts.def_template.js__template_prologue = function( ast ) {
+    var type = ast.get_type();
+
+    if ( type === 'attr' ) {
+        return `//  var a${ ast.aid } = attrs();`
+
+    } else if ( type === 'pair' || type === 'item' ) {
+        return '';
+    } else {
+        return `var r${ ast.rid } = ${ ast.js__default_value() };`
     }
-    T[ '%name' ] = %.:template_name;
-
-def_template :template_name
-    t%{tid}_%{normalize_name()}
-
-# def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
-#     x%rid, r%rid, content, vars
-
-def_template :func_args
-    xr, x%rid, a%aid, ca, cr%args:template_arg
-
-def_template :template_prologue [ ast.get_type() === 'attr' ]
-    //  var a%aid = attrs();
-
-def_template :template_prologue [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
-
-def_template :template_prologue
-    var r%rid = %.:default_value;
+}
 
 def_template :template_epilogue [ ast.get_type() === 'attr' ]
 
@@ -150,6 +159,7 @@ def_arg :template_arg
 * :var_name
     v%{vid}_%normalize_name()
 
+/*
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 def_var :def [ ast.value.is_inline() ]
@@ -480,210 +490,340 @@ false :value
     false
 
 #   ---------------------------------------------------------------------------------------------------------------   #
-
-object :output
-    %body:output
-
-object :value [ ast.body.is_inline() ]
-    { %body:value }
-
-inline_object :value
-    { %body:value }
-
-inline_pair :output [ ast.value.is_inline() ]
-    r%rid[ %key:value ] = %value:value;
-
-pair :output
-    %value:prologue
-    %value:output
-    r%rid[ %key:value ] = r%value.rid;
-
-pair :value
-    %key:value: %value:value
-
-inline_pair :value
-    %key:value: %value:value
-
-#   ---------------------------------------------------------------------------------------------------------------   #
-
-array :output
-    %body:output
-
-array :value [ ast.body.is_inline() ]
-    [ %body:value ]
-
-inline_array :value
-    [ %body:value ]
-
-inline_item :value
-    %value:value
-
-#   FIXME: Хочется иметь один push на все item'ы.
-#   Сейчас это невозможно сделать из-за текущей реализации шаблонов.
-#
-inline_item :output
-    r%{rid}.push( %value:value );
-
-#   ---------------------------------------------------------------------------------------------------------------   #
-
-xml :output
-    %.:start
-    %content:output
-    %.:end
-
-xml :start [ ast.name.is_const() && ( ast.content.starts_with_attr() !== false ) ]
-    r%rid += '<%name:name';
-    a%aid = attrs( '%name:name', {
-        %attrs:output
-    } );
-
-xml :start [ ast.name.is_const() ]
-    r%rid += %.:static_name;
-
-xml :start [ ast.content.starts_with_attr() !== false ]
-    var n%nid = to_tagname( %name:cast );
-    r%rid += '<' + n%nid;
-    a%aid = attrs( n%nid, {
-        %attrs:output
-    } );
-
-xml :start
-    var n%nid = to_tagname( %name:cast );
-    r%rid += %.:dynamic_name;
-
-xml :close_start_tag [ ast.is_empty_tag ]
-    />
-
-xml :close_start_tag
-    >
-
-xml :static_name [ ast.attrs.is_empty() ]
-    '<%{name:name}%.:close_start_tag'
-
-xml :static_name
-    '<%name:name' + %attrs:inline + '%.:close_start_tag'
-
-xml :dynamic_name [ ast.attrs.is_empty() ]
-    '<' + n%nid + ( is_empty_tag( n%nid ) ? '/>' : '>' )
-
-xml :dynamic_name
-    '<' + n%nid + %attrs:inline + ( is_empty_tag( n%nid ) ? '/>' : '>' )
-
-xml :end [ ast.name.is_const() && ast.is_empty_tag ]
-
-xml :end [ ast.name.is_const() ]
-    r%rid += '</%name:name>';
-
-xml :end
-    if ( !is_empty_tag( n%nid ) ) {
-        r%rid += '</' + n%nid + '>';
-    }
-
-xml_attr :inline [ ast.value.get_type() === 'xml' ]
-    " %name='" + xml_to_attrvalue( %value:cast ) + "'"
-
-xml_attr :inline
-    " %name='" + string_to_attrvalue( %value:cast ) + "'"
-
-xml_attr :output [ ast.value.get_type() === 'xml' ]
-#   FIXME: Тут, видимо, должно быть %value:cast?
-    '%name': xml_attr( %value:value )
-
-xml_attr :output
-#   FIXME: Тут, видимо, должно быть %value:cast?
-    '%name': string_attr( %value:value )
-
-close_attrs :output
-    r%rid += a%{rid}.close();
-
-attr :output [ ast.value.get_cast_type() === 'json' ]
-#  FIXME: Или тут нужно %value:cast?
-    a%{rid}.set_xml( '%name:cast', JSON.stringify( %value:value ) );
-
-attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() && ast.op === '+=' ]
-    a%{rid}.add_xml( '%name:cast', %value:cast );
-
-attr :output [ ast.value.get_type() === 'xml' && ast.value.is_inline() ]
-    a%{rid}.set_xml( '%name:cast', %value:cast );
-
-attr :output [ ast.value.is_inline() && ast.op === '+=' ]
-    a%{rid}.add_string( '%name:cast', %value:cast );
-
-attr :output [ ast.value.is_inline() ]
-    a%{rid}.set_string( '%name:cast', %value:cast );
-
-attr :output
-    %value:prologue
-    %value:output
-    %.:epilogue
-
-#attr :epilogue [ ast.value.get_type() === 'attr' ]
-#    //  @%name: %value.get_type()
-#    var %.:var_name = a%{value.rid};
-
-attr :epilogue
-    //  @%name: %value.get_type()
-    a%{rid}.set_string( '%name:cast', r%value.rid );
-
-#   ---------------------------------------------------------------------------------------------------------------   #
-
-param_content :output
-
-    a%{rid}.merge( ca );
-    r%rid += a%{rid}.close() + cr;
-
-param_content_attrs :output
-    a%{rid}.merge( ca );
-
-param_content_other :output
-    r%rid += a%{rid}.close() + cr;
-
-#   ---------------------------------------------------------------------------------------------------------------   #
-
-* :default_value [ ast.get_cast_type() === 'string' ]
-    ''
-
-* :default_value [ ast.get_cast_type() === 'xml' ]
-    ''
-
-* :default_value [ ast.get_cast_type() === 'number' ]
-    0
-
-* :default_value [ ast.get_cast_type() === 'boolean' ]
-    false
-
-* :default_value [ ast.get_cast_type() === 'object' ]
-    {}
-
-* :default_value [ ast.get_cast_type() === 'array' ]
-    []
-
-* :default_value [ ast.get_cast_type() === 'json' ]
-    null
-
-* :default_value
-    ''
-
-#   ---------------------------------------------------------------------------------------------------------------   #
-
-inline_expr :cast [ ast.to_type === 'any' ]
-    %.:value
-
-inline_expr :cast [ ast.from_type === 'xml' && ast.to_type === 'string' ]
-    %.:value
-
-inline_expr :cast [ ast.to_type === 'string' || ast.to_type === 'xml' || ast.to_type === 'number' ]
-    to_%{to_type}( %.:value )
-
-inline_expr :cast [ ast.from_type === 'json' ]
-    to_%{to_type}( %.:value )
-
-inline_expr :cast [ ast.from_type && ast.to_type ]
-    %{from_type}_to_%{to_type}( %.:value )
-
-inline_expr :cast
-    %.:value
 */
 
-};
+asts.object.js__output = function( ast ) {
+    return ast.body.js__output()
+}
+
+asts.object.js__value = function( ast ) {
+    if ( ast.body.is_inline() ) {
+        return `[ ${ ast.body.js__value() } ]`
+    }
+}
+
+asts.inline_object.js__value = function( ast ) {
+    return `[ ${ ast.body.js__value() } ]`
+}
+
+asts.inline_pair.js__output = function( ast ) {
+    if ( ast.value.is_inline() ) {
+        return `
+            r${ ast.rid }[ ${ ast.key.js__value() } ] = ${ ast.value.js__value() };
+        `
+    }
+}
+
+asts.pair.js__output = function( ast ) {
+    return `
+        ${ ast.value.js__prologue() }
+        ${ ast.value.js__output() }
+        r${ ast.rid }[ ${ ast.key.js__value() } ] = r${ ast.value.rid };
+    `
+}
+
+asts.pair.js__value = function( ast ) {
+    return `
+        ${ ast.key.js__value() }: ${ ast.value.js__value() }
+    `
+}
+
+asts.inline_pair.js__value = function( ast ) {
+    return `
+        ${ ast.key.js__value() }: ${ ast.value.js__value() }
+    `
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.array.js__output = function( ast ) {
+    return ast.body.js__output()
+}
+
+asts.array.js__value = function( ast ) {
+    if ( ast.body.is_inline() ) {
+        return `[ ${ ast.body.js__value() } ]`
+    }
+}
+
+asts.inline_array.js__value = function( ast ) {
+    return `[ ${ ast.body.js__value() } ]`
+}
+
+asts.inline_item.js__value = function( ast ) {
+    return ast.value.js__value()
+}
+
+//  FIXME: Хочется иметь один push на все item'ы.
+//  Сейчас это невозможно сделать из-за текущей реализации шаблонов.
+//
+asts.inline_item.js__output = function( ast ) {
+    return `
+        r${ ast.rid }.push( ${ ast.value.js__value() } );
+    `
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.xml.js__output = function( ast ) {
+    return `
+        ${ ast.js__start() }
+        ${ ast.content.js__output() }
+        ${ ast.js__end() }
+    `
+}
+
+asts.xml.js__start = function( ast ) {
+    var is_const = ast.name.is_const();
+    var starts_with_attr = ast.content.starts_with_attr();
+
+    if ( is_const ) {
+        if ( starts_with_attr !== false ) {
+            var name = ast.name.js__name();
+
+            return `
+                r${ ast.rid } += '<${ name }';
+                a%aid = attrs( '${ name }', {
+                    ${ ast.attrs.js__output() }
+                } );
+            `
+        }
+
+        return `
+            r${ ast.rid } += ${ ast.js__static_name() };
+        `
+    }
+
+    if ( starts_with_attr !== false ) {
+        var nid = ast.nid;
+
+        return `
+            var n${ nid } = to_tagname( %name:cast );
+            r${ ast.rid } += '<' + n${ nid };
+            a${ ast.aid } = attrs( n${ nid }, {
+                ${ ast.attrs.js__output() }
+            } );
+        `
+    }
+
+    return `
+        var n${ ast.nid } = to_tagname( ${ ast.name.js__cast() } );
+        r${ ast.rid } += ${ ast.js__dynamic_name() };
+    `
+}
+
+asts.xml.js__close_start_tag = function( ast ) {
+    return ( ast.is_empty_tag ) ? '/>' : '>'
+}
+
+asts.xml.js__static_name = function( ast ) {
+    if ( ast.attrs.is_empty() ) {
+        return `
+            '<${ ast.name.js__name() }${ ast.js__close_start_tag() }'
+        `
+    }
+
+    return `
+        '<${ ast.name.js__name() }' + ${ ast.attrs.js__inline() } + '${ ast.js__close_start_tag() }'
+    `
+}
+
+asts.xml.js__dynamic_name = function( ast ) {
+    var nid = ast.nid;
+
+    if ( ast.attrs.is_empty() ) {
+        return `
+            '<' + n${ nid } + ( is_empty_tag( n${ nid } ) ? '/>' : '>' )
+        `
+    }
+
+    return `
+        '<' + n${ nid } + ${ ast.attrs.js__inline() } + ( is_empty_tag( n${ nid } ) ? '/>' : '>' )
+    `
+}
+
+asts.xml.js__end = function( ast ) {
+    if ( ast.name.is_const() ) {
+        if ( ast.is_empty_tag ) {
+
+        } else {
+            return `
+                r${ ast.rid } += '</${ ast.name.js__name() }>';
+            `
+        }
+    }
+
+    var nid = ast.nid;
+
+    return `
+        if ( !is_empty_tag( n${ nid } ) ) {
+            r${ ast.rid } += '</' + n${ nid } + '>';
+        }
+    `
+}
+
+asts.xml_attr.js__inline = function( ast ) {
+    if ( ast.value.get_type() === 'xml' ) {
+        return `
+            " ${ ast.name }='" + xml_to_attrvalue( ${ ast.value.js__cast() } ) + "'"
+        `
+    }
+
+    return `
+        " ${ ast.name }='" + string_to_attrvalue( ${ ast.value.js__cast() } ) + "'"
+    `
+}
+
+asts.xml_attr.js__output = function( ast ) {
+    if ( ast.value.get_type() === 'xml' ) {
+        //  FIXME: Тут, видимо, должно быть %value:cast?
+        return `
+            '${ ast.name }': xml_attr( ${ ast.value.js__value() } )
+        `
+    }
+
+    //  FIXME: Тут, видимо, должно быть %value:cast?
+    return `
+        '${ ast.name }': string_attr( ${ ast.value.js__value() } )
+    `
+}
+
+asts.close_attrs.js__output = function( ast ) {
+    var rid = ast.rid;
+
+    return `
+        r${ rid } += a${ rid }.close();
+    `
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.attr.js__output = function( ast ) {
+    if ( ast.value.get_cast_type() === 'json' ) {
+        //  FIXME: Или тут нужно `ast.value.js__cast()`?
+        return `
+            a${ ast.rid }.set_xml( '${ ast.name.js__cast() }', JSON.stringify( ${ ast.value.js__value() } ) );
+        `
+    }
+
+    var type = ast.value.get_type();
+    var is_inline = ast.value.is_inline;
+
+    if ( is_inline ) {
+        if ( type === 'xml' ) {
+            if ( ast.op === '+=' ) {
+                return `
+                    a${ ast.rid }.add_xml( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+                `
+            }
+
+            return `
+                a${ ast.rid }.set_xml( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+            `
+        }
+
+        if ( ast.op === '+=' ) {
+            return `
+                a${ ast.rid }.add_string( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+            `
+        }
+
+        return `
+            a${ ast.rid }.set_string( '${ ast.name.js__cast()', ${ ast.value.js__cast() } );
+        `
+    }
+
+    return `
+        ${ ast.value.js__prologue() }
+        ${ ast.value.js__output() }
+        ${ ast.js__epilogue() }
+    `
+}
+
+asts.attr.js__epilogue = function( ast ) {
+    //  attr :epilogue [ ast.value.get_type() === 'attr' ]
+    //      //  @%name: %value.get_type()
+    //      var %.:var_name = a%{value.rid};
+
+    return `
+        //  @${ ast.name }: ${ ast.value.get_type() }
+        a${ ast.rid }.set_string( '${ ast.name.js__cast() }', r${ ast.value.rid } );
+    `
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.param_content.js__output = function( ast ) {
+    var rid = ast.rid;
+
+    return `
+        a${ rid }.merge( ca );
+        r${ rid } += a${ rid }.close() + cr;
+    `
+}
+
+asts.param_content_attrs.js__output = function( ast ) {
+    return `
+        a${ ast.rid }.merge( ca );
+    `
+}
+
+asts.param_content_other.js__output = function( ast ) {
+    var rid = ast.rid;
+
+    return `
+        r${ rid } += a${ rid }.close() + cr;
+    `
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.ast.js__default_value = function( ast ) {
+    switch ( ast.get_cast_type() ) {
+        case 'number':
+            return '0'
+
+        case 'boolean':
+            return 'false'
+
+        case 'object':
+            return '{}'
+
+        case 'array':
+            return '[]'
+
+        case 'json':
+            return 'null'
+
+        default:
+            return "''"
+    }
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.inline_expr.js__cast = function( ast ) {
+    var from = ast.from;
+    var to = ast.to;
+
+    var value = ast.value.js();
+
+    if ( to === 'any' ) {
+        return value
+    }
+
+    if ( from === 'xml' && to === 'string' ) {
+        return value
+    }
+
+    if ( to === 'string' || to === 'xml' || to === 'number' || from === 'json') {
+        return `to_${ to }( ${ value } )`
+    }
+
+    if ( from && to ) {
+        return `${ from }_to_${ to }( ${ value } )
+    }
+
+    return value
+}
 
