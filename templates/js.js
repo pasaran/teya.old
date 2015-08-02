@@ -102,8 +102,7 @@ asts.def_imported_template.js = function( ast ) {
     `
 }
 
-
-#   ---------------------------------------------------------------------------------------------------------------   #
+//  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.def_template.js = function( ast ) {
     return `
@@ -142,6 +141,7 @@ asts.def_template.js__template_prologue = function( ast ) {
     }
 }
 
+/*
 def_template :template_epilogue [ ast.get_type() === 'attr' ]
 
 def_template :template_epilogue
@@ -159,7 +159,6 @@ def_arg :template_arg
 * :var_name
     v%{vid}_%normalize_name()
 
-/*
 #   ---------------------------------------------------------------------------------------------------------------   #
 
 def_var :def [ ast.value.is_inline() ]
@@ -729,7 +728,7 @@ asts.attr.js__output = function( ast ) {
         }
 
         return `
-            a${ ast.rid }.set_string( '${ ast.name.js__cast()', ${ ast.value.js__cast() } );
+            a${ ast.rid }.set_string( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
         `
     }
 
@@ -821,9 +820,12 @@ asts.inline_expr.js__cast = function( ast ) {
     }
 
     if ( from && to ) {
-        return `${ from }_to_${ to }( ${ value } )
+        return `${ from }_to_${ to }( ${ value } )`
     }
 
     return value
 }
 
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+};
