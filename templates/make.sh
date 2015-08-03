@@ -1,4 +1,4 @@
 #!/bin/sh
 
-../node_modules/.bin/babel *.js --plugins ./babel-plugin/template-literals.js -d compiled/
+../node_modules/.bin/babel *.js --plugins ./lib/babel-plugin-template-literals.js -d compiled/
 

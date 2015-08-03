@@ -19,7 +19,7 @@ module.exports = function( params ) {
                                     t.callExpression(
                                         t.identifier( 'require' ),
                                         [
-                                            t.literal( './util.js' )
+                                            t.literal( '../lib/runtime.js' )
                                         ]
                                     ),
                                     t.identifier( 'indent' )

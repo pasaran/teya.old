@@ -546,10 +546,10 @@ xml :end
     }
 
 xml_attr :inline [ ast.value.get_type() === 'xml' ]
-    ' %name="' + xml_to_attrvalue( %value:cast ) + '"'
+    " %name='" + xml_to_attrvalue( %value:cast ) + "'"
 
 xml_attr :inline
-    ' %name="' + string_to_attrvalue( %value:cast ) + '"'
+    " %name='" + string_to_attrvalue( %value:cast ) + "'"
 
 xml_attr :output [ ast.value.get_type() === 'xml' ]
 #   FIXME: Тут, видимо, должно быть %value:cast?
