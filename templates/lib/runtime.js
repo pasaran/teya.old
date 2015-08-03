@@ -2,15 +2,15 @@ var runtime = {};
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-var rx_indent = /^/gm;
+var rx_indent = /^(?=\S)/gm;
 
 runtime.indent = function( str, indent ) {
-    if ( str ) {
-        str = str.replace( rx_indent, indent );
-    }
+    return ( str ) ? str.replace( rx_indent, indent ) : '';
+};
 
-    return str;
-}
+runtime.line = function( str ) {
+    return ( str ) ? str + '\n' : '';
+};
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 

@@ -16,13 +16,16 @@ module.exports = function( params ) {
                             t.variableDeclarator(
                                 t.identifier( 'indent' ),
                                 t.memberExpression(
-                                    t.callExpression(
-                                        t.identifier( 'require' ),
-                                        [
-                                            t.literal( '../lib/runtime.js' )
-                                        ]
-                                    ),
+                                    call( 'require', [ t.literal( '../lib/runtime.js' ) ] ),
                                     t.identifier( 'indent' )
+                                )
+                            ),
+
+                            t.variableDeclarator(
+                                t.identifier( 'line' ),
+                                t.memberExpression(
+                                    call( 'require', [ t.literal( '../lib/runtime.js' ) ] ),
+                                    t.identifier( 'line' )
                                 )
                             )
                         ]
@@ -37,8 +40,7 @@ module.exports = function( params ) {
                 var l = exprs.length;
 
                 var groups = [];
-                var group = [];
-                groups.push( group );
+                var group = null;
 
                 //  Если мы пишем template literal в виде:
                 //
@@ -47,18 +49,18 @@ module.exports = function( params ) {
                 //      `
                 //
                 //  то нужно в начале отрезать перевод строки.
-                //  А в конце перевод строки и пробелы.
+                //  А в конце переводы строк и/или пробелы.
                 //
                 var first = literals[ 0 ].value.cooked;
                 var indent;
-                if ( first.charAt( '\n' ) ) {
+                if ( first.charAt( 0 ) === '\n' ) {
                     first = first.substr( 1 );
                     //  Запоминаем, глобальный индент.
                     //  Потом нужно будет вырезать его из всех строк.
                     indent = leading_spaces( first ).length;
+
+                    literals[ l ].value.cooked = literals[ l ].value.cooked.trimRight();
                 }
-                //
-                literals[ l ].value.cooked = literals[ l ].value.cooked.replace( /\n\s+$/m, '' );
 
                 //  Группируем литералы и выражения по строкам.
                 //  Каждый перевод строки внутри литерала заканчивает группу/строку и начинает новую.
@@ -68,21 +70,27 @@ module.exports = function( params ) {
                     push_literal( literals[ i + 1 ].value.cooked );
                 }
 
+                //  log( groups );
+
                 //  Генерируем AST, складывающее все литералы и выражения.
                 for ( var i = 0, l = groups.length; i < l; i++ ) {
                     var group = groups[ i ];
 
+                    var is_not_last = ( i < l - 1 );
+
+                    var first = group[ 0 ];
+
                     if ( group.length === 1 ) {
                         //  Если группа состоит из одного элемента, то это точно литерал.
-                        //  Убираем глобальный индент и создаем литерал.
                         //
-                        groups[ i ] = t.literal( deindent_string( group[ 0 ], indent ) + '\n' );
+                        if ( is_not_last ) {
+                            first += '\n';
+                        }
+                        groups[ i ] = t.literal( first );
 
                     } else {
                         //  Первый элемент группы всегда литерал.
                         //
-                        //  Убираем глобальный индент.
-                        var first = deindent_string( group[ 0 ], indent );
                         //  Смотрим, нет ли еще индента. Если есть, запоминаем и отрезаем.
                         var line_indent = leading_spaces( first );
                         if ( line_indent ) {
@@ -90,25 +98,27 @@ module.exports = function( params ) {
                         }
                         group[ 0 ] = first;
 
-                        //  "Суммируем" группу.
-                        var r = reduce_group( group );
-                        if ( line_indent ) {
-                            //  Если в строке был свой индент, то получившееся выражение
-                            //  заворачиваем в вызов функции `indent`.
-                            //
-                            r = t.callExpression(
-                                t.identifier( 'indent' ),
-                                [
-                                    r,
-                                    t.literal( line_indent )
-                                ]
-                            )
+                        var is_not_empty = is_not_empty_line( group );
+
+                        var r;
+                        if ( is_not_empty ) {
+                            if ( is_not_last ) {
+                                group.push( '\n' );
+                            }
+                            r = reduce_group( group );
+                            if ( line_indent ) {
+                                r = call( 'indent', [ r, t.literal( line_indent ) ] )
+                            }
 
                         } else {
-                            //  Если нет, то создаем добавляем в конец перевод строки.
-                            r = t.binaryExpression( '+', r, t.literal( '\n' ) );
+                            r = reduce_group( group );
+                            if ( is_not_last ) {
+                                r = call( 'line', [ r ] );
+                            }
+                            if ( line_indent ) {
+                                r = call( 'indent', [ r, t.literal( line_indent ) ] );
+                            }
                         }
-
                         groups[ i ] = r;
                     }
                 }
@@ -119,21 +129,53 @@ module.exports = function( params ) {
 
                 function push_literal( literal ) {
                     var lines = literal.split( '\n' );
+                    var l = lines.length;
 
-                    //  Каждая строка, кроме последней, заканчивает группу и начинает новую.
-                    //  В случае, если строка всего одна (она же будет и последней), то группа не меняется.
-                    //
-                    for ( var i = 0, l = lines.length; i < l - 1; i++ ) {
-                        group.push( lines[ i ] );
+                    if ( l === 1 ) {
+                        push_string( lines[ 0 ] );
+
+                    } else {
+                        //  Каждая строка, кроме последней, заканчивает группу и начинает новую.
+                        //  В случае, если строка всего одна (она же будет и последней), то группа не меняется.
+                        //
+                        for ( var i = 0, l = lines.length; i < l - 1; i++ ) {
+                            push_string( lines[ i ] );
+                            group = null;
+                        }
+                        push_string( lines[ l - 1 ] );
+                    }
+                }
+
+                function push_string( str ) {
+                    if ( !group ) {
+                        str = deindent_string( str, indent );
+
                         group = [];
                         groups.push( group );
                     }
-                    group.push( lines[ l - 1 ] );
+
+                    group.push( str );
                 }
 
             }
         }
     } );
+
+    function is_not_empty_line( line ) {
+        for ( var i = 0, l = line.length; i < l; i++ ) {
+            var item = line[ i ];
+            if ( item && typeof item === 'string' ) {
+                return true;
+            }
+        }
+    }
+
+    function call( name, args ) {
+        return t.callExpression(
+            t.identifier( name ),
+            args
+        );
+    }
 
     function reduce_group( group ) {
         //  Берем первый элемент и "прибавляем" к нему все остальные.

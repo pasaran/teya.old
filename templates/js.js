@@ -1,5 +1,49 @@
 module.exports = function( asts ) {
 
+function items_method( method, sep ) {
+    var no_sep = !sep;
+
+    sep = sep || '';
+
+    return function() {
+        if ( no_sep ) {
+            console.log( 'NO SEP', this.id, method );
+        }
+
+        var items = this.items;
+        var l = items.length;
+
+        var r;
+        if ( l === 0 ) {
+            r = '';
+
+        } else if ( l === 1 ) {
+            r = items[ 0 ][ method ]();
+
+        } else if ( l === 2 ) {
+            r = items[ 0 ][ method ]() + sep + items[ 1 ][ method ]();
+
+        } else {
+            r = '';
+            for ( var i = 0; i < l; i++ ) {
+                var item = items[ i ];
+                var result = item[ method ]();
+
+                if ( result ) {
+                    if ( i ) {
+                        r += sep;
+                    }
+                    r += result;
+                }
+            }
+        }
+
+        //  console.log( 'ITEMS', this.id, l, r );
+
+        return r;
+    }
+}
+
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.module.js = function() {
@@ -56,11 +100,24 @@ asts.module.js = function() {
 
 asts.module_vars.js__define = function() {
     if ( !this.is_empty() ) {
-        return `var ${ this.js__list() }`
+        return `var ${ this.js__list() };`
     }
 
     return '';
 }
+
+asts.module_vars.js__list = items_method( 'js__list', ', ' );
+
+asts.module_templates.js = items_method( 'js', '\n' );
+
+asts.module_imports.js = items_method( 'js', '\n' );
+asts.module_imports.js__init = items_method( 'js__init', '\n' );
+
+asts.module_funcs.js__define = items_method( 'js__define', '\n' );
+
+asts.module_vars.js__init = items_method( 'js__init', '\n' );
+asts.module_vars.js__def = items_method( 'js__def', '\n' );
+asts.module_vars.js__export = items_method( 'js__export', '\n' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -125,7 +182,13 @@ asts.def_template.js__template_name = function() {
 //      x%rid, r%rid, content, vars
 
 asts.def_template.js__func_args = function() {
-    return `xr, x${ this.rid }, a${ this.aid }, ca, cr${ this.args.js__template_arg() }`
+    var args = this.args;
+
+    if ( args ) {
+        return `xr, x${ this.rid }, a${ this.aid }, ca, cr${ this.args.js__template_arg() }`
+    }
+
+    return `xr, x${ this.rid }, a${ this.aid }, ca, cr`
 }
 
 asts.def_template.js__template_prologue = function() {
@@ -145,9 +208,15 @@ asts.def_template.js__template_epilogue = function() {
     if ( this.get_type() === 'attr' ) {
 
     } else {
-        return `return r${ this.rid };`
+        return `
+            return r${ this.rid };
+        `
     }
 }
+
+asts.def_args.js__template_arg = items_method( 'js__template_arg' );
+asts.def_args.js__default = items_method( 'js__default' );
+asts.def_args.js__func_arg = items_method( 'js__func_arg' );
 
 asts.def_arg.js__default = function() {
     if ( this.default ) {
@@ -163,7 +232,7 @@ asts.def_arg.js__template_arg = function() {
     return `, ${ this.js__var_name() }`
 }
 
-asts.this.js__var_name = function() {
+asts.ast.js__var_name = function() {
     return `v${ this.vid }_${ this.normalize_name() }`
 }
 
@@ -245,6 +314,8 @@ asts.def_func.js__define = function() {
             }
         `
     }
+
+    return '';
 }
 
 asts.def_func.js__func_name = function() {
@@ -298,7 +369,7 @@ asts.block.js__value = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.this.js__prologue = function() {
+asts.ast.js__prologue = function() {
     switch ( this.get_type() ) {
         case 'object':
             return `var r${ this.rid } = {};`
@@ -329,6 +400,10 @@ asts.block.js__output = function() {
         ${ this.exprs.js__output() }
     `
 }
+
+asts.block_defs.js__def = items_method( 'js__def', '\n' );
+asts.block_exprs.js__output = items_method( 'js__output', '\n' );
+asts.block_exprs.js__value = items_method( 'js__value' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -483,7 +558,7 @@ asts.template.js__context = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.this.js__template_param_def = function() {
+asts.ast.js__template_param_def = function() {
     var value = this.value;
 
     if ( value && !this.is_inline() ) {
@@ -496,7 +571,7 @@ asts.this.js__template_param_def = function() {
     }
 }
 
-asts.this.js__template_param_epilogue = function() {
+asts.ast.js__template_param_epilogue = function() {
     var value = this.value;
 
     if ( value.get_type() === 'attr' ) {
@@ -526,7 +601,7 @@ asts.template_param.js__template_param_value = function() {
     return ', null'
 }
 
-asts.this.js__param_name = function() {
+asts.ast.js__param_name = function() {
     return `z${ this.rid }_${ this.normalize_name() }`
 }
 
@@ -581,6 +656,9 @@ asts.inline_subexpr.js__value = function() {
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.string_content.js__name = items_method( 'js__name' );
+asts.string_content.js__cast = items_method( 'js__cast' );
 
 asts.inline_string.js__cast = function() {
     return this.value.js__cast()
@@ -955,7 +1033,7 @@ asts.param_content_other.js__output = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.this.js__default_value = function() {
+asts.ast.js__default_value = function() {
     switch ( this.get_cast_type() ) {
         case 'number':
             return '0'
