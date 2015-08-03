@@ -2,7 +2,7 @@ module.exports = function( asts ) {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.module.js = function( ast ) {
+asts.module.js = function() {
     return `
         var no = require( 'nommon' );
 
@@ -28,18 +28,18 @@ asts.module.js = function( ast ) {
         var T = M.templates = {};
         var V = M.vars = {};
 
-        ${ ast.imports.js() }
+        ${ this.imports.js() }
 
-        ${ ast.vars.js__define() }
-        ${ ast.funcs.js__define() }
+        ${ this.vars.js__define() }
+        ${ this.funcs.js__define() }
 
-        ${ ast.templates.js() }
+        ${ this.templates.js() }
 
         M.init = function( xr, x0 ) {
-            ${ ast.imports.js__init() }
-            ${ ast.vars.js__def() }
-            ${ ast.vars.js__export() }
-            ${ ast.vars.js__init() }
+            ${ this.imports.js__init() }
+            ${ this.vars.js__def() }
+            ${ this.vars.js__export() }
+            ${ this.vars.js__init() }
         }
 
         M.run = function( xr, id ) {
@@ -54,9 +54,9 @@ asts.module.js = function( ast ) {
     `
 }
 
-asts.module_vars.js__define = function( ast ) {
-    if ( !ast.is_empty() ) {
-        return `var ${ ast.js__list() }`
+asts.module_vars.js__define = function() {
+    if ( !this.is_empty() ) {
+        return `var ${ this.js__list() }`
     }
 
     return '';
@@ -64,80 +64,80 @@ asts.module_vars.js__define = function( ast ) {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.import.js = function( ast ) {
-    var iid = ast.iid;
+asts.import.js = function() {
+    var iid = this.iid;
 
-    if ( ast.is_js ) {
+    if ( this.is_js ) {
         return `
-            var M${ iid } = require( './${ ast.filename }' );
+            var M${ iid } = require( './${ this.filename }' );
         `
     }
 
     return `
-        var M${ iid } = require( './${ ast.filename }.js' );
+        var M${ iid } = require( './${ this.filename }.js' );
         var T${ iid } = M${ iid }.templates;
         var V${ iid } = M${ iid }.vars;
     `
 }
 
-asts.import.js__init = function( ast ) {
-    if ( !ast.is_js ) {
+asts.import.js__init = function() {
+    if ( !this.is_js ) {
         return `
-            M${ ast.iid }.init( xr, x0 );
+            M${ this.iid }.init( xr, x0 );
         `
     }
 
     return '';
 }
 
-asts.def_imported_template.js = function( ast ) {
-    if ( ast.namespace ) {
+asts.def_imported_template.js = function() {
+    if ( this.namespace ) {
         return `
-            var t_${ ast.normalize_name() } = T${ ast.import.iid }[ '${ ast.shortname }' ];
+            var t_${ this.normalize_name() } = T${ this.import.iid }[ '${ this.shortname }' ];
         `
     }
 
     return `
-        var t_${ ast.normalize_name() } = T[ '${ ast.name }' ] = T${ ast.import.iid }[ '${ ast.shortname }' ];
+        var t_${ this.normalize_name() } = T[ '${ this.name }' ] = T${ this.import.iid }[ '${ this.shortname }' ];
     `
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.def_template.js = function( ast ) {
+asts.def_template.js = function() {
     return `
-        //  ${ ast.name }: ${ ast.get_type() }
-        function ${ ast.js__template_name() }( ${ ast.js__func_args() } ) {
-            ${ ast.args.js__default() }
-            ${ ast.js__template_prologue() }
-            ${ ast.body.js__output() }
-            ${ ast.js__template_epilogue() }
+        //  ${ this.name }: ${ this.get_type() }
+        function ${ this.js__template_name() }( ${ this.js__func_args() } ) {
+            ${ this.args.js__default() }
+            ${ this.js__template_prologue() }
+            ${ this.body.js__output() }
+            ${ this.js__template_epilogue() }
         }
-        T[ '${ ast.name }' ] = ${ ast.js__template_name() };
+        T[ '${ this.name }' ] = ${ this.js__template_name() };
     `
 }
 
-asts.def_template.js__template_name = function( ast ) {
-    return `t${ ast.tid }_${ ast.normalize_name() }`
+asts.def_template.js__template_name = function() {
+    return `t${ this.tid }_${ this.normalize_name() }`
 }
 
-//  def_template :func_args [ ast.get_type() === 'pair' || ast.get_type() === 'item' ]
+//  def_template :func_args [ this.get_type() === 'pair' || this.get_type() === 'item' ]
 //      x%rid, r%rid, content, vars
 
-asts.def_template.js__func_args = function( ast ) {
-    return `xr, x${ ast.rid }, a${ ast.aid }, ca, cr${ ast.args.js__template_arg() }`
+asts.def_template.js__func_args = function() {
+    return `xr, x${ this.rid }, a${ this.aid }, ca, cr${ this.args.js__template_arg() }`
 }
 
-asts.def_template.js__template_prologue = function( ast ) {
-    var type = ast.get_type();
+asts.def_template.js__template_prologue = function() {
+    var type = this.get_type();
 
     if ( type === 'attr' ) {
-        return `//  var a${ ast.aid } = attrs();`
+        return `//  var a${ this.aid } = attrs();`
 
     } else if ( type === 'pair' || type === 'item' ) {
         return '';
     } else {
-        return `var r${ ast.rid } = ${ ast.js__default_value() };`
+        return `var r${ this.rid } = ${ this.js__default_value() };`
     }
 }
 
@@ -163,7 +163,7 @@ asts.def_arg.js__template_arg = function() {
     return `, ${ this.js__var_name() }`
 }
 
-asts.ast.js__var_name = function() {
+asts.this.js__var_name = function() {
     return `v${ this.vid }_${ this.normalize_name() }`
 }
 
@@ -225,7 +225,7 @@ asts.def_var.js__init = function() {
 asts.def_func.js__define = function() {
     if ( this.is_user ) {
         if ( this.body.is_inline() ) {
-            //  FIXME: Возможно, тут должно быть body:cast.
+            //  FIXME: Возможно, тут должно быть body:cthis.
             return `
                 //  ${ this.get_full_name() } : ${ this.get_type() }
                 function ${ this.js__func_name() }( xr, x0, a0${ this.args.js__func_arg() } ) {
@@ -298,7 +298,7 @@ asts.block.js__value = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.ast.js__prologue = function() {
+asts.this.js__prologue = function() {
     switch ( this.get_type() ) {
         case 'object':
             return `var r${ this.rid } = {};`
@@ -353,7 +353,7 @@ asts.if.js__cast = function() {
 }
 
 asts.if.js__output = function() {
-    if ( ast.is_inline() ) {
+    if ( this.is_inline() ) {
         return this.js__value()
     }
 
@@ -403,8 +403,8 @@ asts.for.js__output = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.value.js__cast = function( ast ) {
-    return ast.value.js__cast()
+asts.value.js__cast = function() {
+    return this.value.js__cast()
 }
 
 asts.value.js__value = function() {
@@ -426,7 +426,7 @@ asts.value.js__output = function() {
         return `a${ this.rid }.copy( ${ this.value.js__value() } );`
     }
 
-    if ( !ast.to_type ) {
+    if ( !this.to_type ) {
         //  FIXME: А почему тут было %value:cast?
         return `r${ this.rid } = ${ this.value.js__value() };`
     }
@@ -436,15 +436,15 @@ asts.value.js__output = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.template.js__name = function( ast ) {
-    return `t${ ast.def.tid }_${ ast.normalize_name() }`
+asts.template.js__name = function() {
+    return `t${ this.def.tid }_${ this.normalize_name() }`
 }
 
-asts.template.js__output = function( ast ) {
-    var type = ast.def.get_type();
+asts.template.js__output = function() {
+    var type = this.def.get_type();
 
-    var params = ast.params;
-    var content = ast.content;
+    var params = this.params;
+    var content = this.content;
     var content_rid = content.rid;
 
     if ( type === 'attr' ) {
@@ -452,7 +452,7 @@ asts.template.js__output = function( ast ) {
             ${ params.js__template_param_def() }
             //  ${ type }
             ${ content.js__content() }
-            ${ ast.js__name() }( xr, ${ ast.js__context() }, a${ ast.aid }, a${ content_rid }, r${ content_rid }${ params.js__template_param_value() } );
+            ${ this.js__name() }( xr, ${ this.js__context() }, a${ this.aid }, a${ content_rid }, r${ content_rid }${ params.js__template_param_value() } );
         `
     }
 
@@ -461,7 +461,7 @@ asts.template.js__output = function( ast ) {
             ${ params.js__template_param_def() }
             //  ${ type }
             ${ content.js__content() }
-            r${ ast.rid } += ${ ast.js__name() }( xr, ${ ast.js__context() }, a${ ast.aid }, a${ content_rid }, r${ content_rid }${ params.js__template_param_value() } );
+            r${ this.rid } += ${ this.js__name() }( xr, ${ this.js__context() }, a${ this.aid }, a${ content_rid }, r${ content_rid }${ params.js__template_param_value() } );
         `
     }
 
@@ -469,404 +469,404 @@ asts.template.js__output = function( ast ) {
         ${ params.js__template_param_def() }
         //  ${ type }
         ${ content.js__content() }
-        r${ ast.rid } = ${ ast.js__name() }( xr, ${ ast.js__context() }, a${ ast.aid }, a${ content_rid }, r${ content_rid }${ params.js__template_param_value() } );
+        r${ this.rid } = ${ this.js__name() }( xr, ${ this.js__context() }, a${ this.aid }, a${ content_rid }, r${ content_rid }${ params.js__template_param_value() } );
     `
 }
 
-asts.template.js__context = function( ast ) {
-    if ( ast.context ) {
-        return ast.context.js__value()
+asts.template.js__context = function() {
+    if ( this.context ) {
+        return this.context.js__value()
     }
 
-    return `x${ ast.xid }`
+    return `x${ this.xid }`
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.ast.js__template_param_def = function( ast ) {
-    var value = ast.value;
+asts.this.js__template_param_def = function() {
+    var value = this.value;
 
-    if ( value && !ast.is_inline() ) {
+    if ( value && !this.is_inline() ) {
         return `
             //  ${ value.get_type() }
             ${ value.js__prologue() }
             ${ value.js__output() }
-            ${ ast.js__template_param_epilogue() }
+            ${ this.js__template_param_epilogue() }
         `
     }
 }
 
-asts.ast.js__template_param_epilogue = function( ast ) {
-    var value = ast.value;
+asts.this.js__template_param_epilogue = function() {
+    var value = this.value;
 
     if ( value.get_type() === 'attr' ) {
         return `
-            //  ${ ast.name }: ${ ast.get_type() }
-            var ${ ast.js__param_name() } = a${ value.rid };
+            //  ${ this.name }: ${ this.get_type() }
+            var ${ this.js__param_name() } = a${ value.rid };
         `
     }
 
     return `
-        //  ${ ast.name }: ${ ast.get_type() }
-        var ${ ast.js__param_name() } = r${ value.rid };
+        //  ${ this.name }: ${ this.get_type() }
+        var ${ this.js__param_name() } = r${ value.rid };
     `
 }
 
-asts.template_param.js__template_param_value = function( ast ) {
-    var value = ast.value;
+asts.template_param.js__template_param_value = function() {
+    var value = this.value;
 
     if ( value ) {
         if ( value.is_inline() ) {
             return `, ${ value.js__cast() }`
         }
 
-        return `, ${ ast.js__param_name() }`
+        return `, ${ this.js__param_name() }`
     }
 
     return ', null'
 }
 
-asts.ast.js__param_name = function( ast ) {
-    return `z${ ast.rid }_${ ast.normalize_name() }`
+asts.this.js__param_name = function() {
+    return `z${ this.rid }_${ this.normalize_name() }`
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.subexpr.js__output = function( ast ) {
-    return ast.body.js__output()
+asts.subexpr.js__output = function() {
+    return this.body.js__output()
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.jpath.js__value = function( ast ) {
-    if ( ast.abs ) {
-        if ( !ast.steps ) {
+asts.jpath.js__value = function() {
+    if ( this.abs ) {
+        if ( !this.steps ) {
             return 'xr'
         }
 
-        return `no.jpath( '${ ast.teya() }', xr )`
+        return `no.jpath( '${ this.teya() }', xr )`
     }
 
-    if ( !ast.steps ) {
-        return `x${ ast.xid }`
+    if ( !this.steps ) {
+        return `x${ this.xid }`
     }
 
-    return `no.jpath( '${ ast.teya() }', x${ xid } )`
+    return `no.jpath( '${ this.teya() }', x${ xid } )`
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.inline_binop.js__cast = function( ast ) {
-    return `${ ast.left.js__cast() } ${ ast.op } ${ ast.right.js__cast() }`
+asts.inline_binop.js__cast = function() {
+    return `${ this.left.js__cast() } ${ this.op } ${ this.right.js__cast() }`
 }
 
-asts.inline_binop.js__value = function( ast ) {
-    return `${ ast.left.js__value() } ${ ast.op } ${ ast.right.js__value() }`
+asts.inline_binop.js__value = function() {
+    return `${ this.left.js__value() } ${ this.op } ${ this.right.js__value() }`
 }
 
-asts.inline_unop.js__value = function( ast ) {
-    return `${ ast.op }${ ast.left.js__value() }`
+asts.inline_unop.js__value = function() {
+    return `${ this.op }${ this.left.js__value() }`
 }
 
-asts.inline_ternary.js__value = function( ast ) {
-    return `( ${ ast.condition.js__value() } ) ? ${ ast.then.js__value() } : ${ ast.else.js__value() }`
+asts.inline_ternary.js__value = function() {
+    return `( ${ this.condition.js__value() } ) ? ${ this.then.js__value() } : ${ this.else.js__value() }`
 }
 
-asts.inline_number.js__value = function( ast ) {
-    return ast.value
+asts.inline_number.js__value = function() {
+    return this.value
 }
 
-asts.inline_subexpr.js__value = function( ast ) {
-    return `( ${ ast.expr.js__value() } )`
-}
-
-//  ---------------------------------------------------------------------------------------------------------------  //
-
-asts.inline_string.js__cast = function( ast ) {
-    return ast.value.js__cast()
-}
-
-asts.inline_string.js__value = function( ast ) {
-    return ast.value.js__cast()
-}
-
-asts.string_literal.js__name = function( ast ) {
-    return ast.stringify()
-}
-
-asts.string_literal.js__cast = function( ast ) {
-    return ast.js__value()
-}
-
-asts.string_literal.js__value = function( ast ) {
-    return `'${ ast.stringify() }'`
-}
-
-asts.string_expr.js__value = function( ast ) {
-    return ast.expr.js__cast()
+asts.inline_subexpr.js__value = function() {
+    return `( ${ this.expr.js__value() } )`
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.inline_var.js__value = function( ast ) {
-    return ast.def.js__var_name()
+asts.inline_string.js__cast = function() {
+    return this.value.js__cast()
+}
+
+asts.inline_string.js__value = function() {
+    return this.value.js__cast()
+}
+
+asts.string_literal.js__name = function() {
+    return this.stringify()
+}
+
+asts.string_literal.js__cast = function() {
+    return this.js__value()
+}
+
+asts.string_literal.js__value = function() {
+    return `'${ this.stringify() }'`
+}
+
+asts.string_expr.js__value = function() {
+    return this.expr.js__cast()
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.inline_func.js__value = function( ast ) {
-    var def = ast.def;
+asts.inline_var.js__value = function() {
+    return this.def.js__var_name()
+}
+
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.inline_func.js__value = function() {
+    var def = this.def;
 
     if ( def.is_external ) {
-        return `M${ def.parent.parent.iid }.${ ast.name }( ${ ast.args.js() } )`
+        return `M${ def.parent.parent.iid }.${ this.name }( ${ this.args.js() } )`
     }
 
     if ( def.is_user ) {
-        if ( ast.args.is_empty() ) {
-            return `${ ast.js__func_name() }( xr, x${ ast.xid }, a${ ast.aid } )`
+        if ( this.args.is_empty() ) {
+            return `${ this.js__func_name() }( xr, x${ this.xid }, a${ this.aid } )`
         }
 
         //  FIXME. Сделать отдельный шаблон для параметров и ставить запятую там.
-        return `${ ast.js__func_name() }( xr, x${ ast.xid }, a${ ast.aid }, ${ ast.args.js() } )`
+        return `${ this.js__func_name() }( xr, x${ this.xid }, a${ this.aid }, ${ this.args.js() } )`
     }
 
     if ( def.is_internal ) {
-        return ast.js__internal()
+        return this.js__internal()
     }
 }
 
-asts.inline_func.js__func_name = function( ast ) {
-    var def = ast.def;
+asts.inline_func.js__func_name = function() {
+    var def = this.def;
 
     return `f_${ def.normalize_name() }_${ def.fid }`
 }
 
-asts.inline_func_arg.js = function( ast ) {
-    return ast.value.js__cast()
+asts.inline_func_arg.js = function() {
+    return this.value.js__cast()
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.inline_func.js__internal = function( ast ) {
-    switch ( ast.name ) {
+asts.inline_func.js__internal = function() {
+    switch ( this.name ) {
         case 'log':
-            return `console.log( ${ ast.args.js() } )`
+            return `console.log( ${ this.args.js() } )`
 
         case 'slice':
-            return `I.slice( ${ ast.args.js() } )`
+            return `I.slice( ${ this.args.js() } )`
     }
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.true.js__value = function( ast ) {
+asts.true.js__value = function() {
     return 'true'
 }
 
-asts.false.js__value = function( ast ) {
+asts.false.js__value = function() {
     return 'false'
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.object.js__output = function( ast ) {
-    return ast.body.js__output()
+asts.object.js__output = function() {
+    return this.body.js__output()
 }
 
-asts.object.js__value = function( ast ) {
-    if ( ast.body.is_inline() ) {
-        return `[ ${ ast.body.js__value() } ]`
+asts.object.js__value = function() {
+    if ( this.body.is_inline() ) {
+        return `[ ${ this.body.js__value() } ]`
     }
 }
 
-asts.inline_object.js__value = function( ast ) {
-    return `[ ${ ast.body.js__value() } ]`
+asts.inline_object.js__value = function() {
+    return `[ ${ this.body.js__value() } ]`
 }
 
-asts.inline_pair.js__output = function( ast ) {
-    if ( ast.value.is_inline() ) {
+asts.inline_pair.js__output = function() {
+    if ( this.value.is_inline() ) {
         return `
-            r${ ast.rid }[ ${ ast.key.js__value() } ] = ${ ast.value.js__value() };
+            r${ this.rid }[ ${ this.key.js__value() } ] = ${ this.value.js__value() };
         `
     }
 }
 
-asts.pair.js__output = function( ast ) {
+asts.pair.js__output = function() {
     return `
-        ${ ast.value.js__prologue() }
-        ${ ast.value.js__output() }
-        r${ ast.rid }[ ${ ast.key.js__value() } ] = r${ ast.value.rid };
+        ${ this.value.js__prologue() }
+        ${ this.value.js__output() }
+        r${ this.rid }[ ${ this.key.js__value() } ] = r${ this.value.rid };
     `
 }
 
-asts.pair.js__value = function( ast ) {
+asts.pair.js__value = function() {
     return `
-        ${ ast.key.js__value() }: ${ ast.value.js__value() }
+        ${ this.key.js__value() }: ${ this.value.js__value() }
     `
 }
 
-asts.inline_pair.js__value = function( ast ) {
+asts.inline_pair.js__value = function() {
     return `
-        ${ ast.key.js__value() }: ${ ast.value.js__value() }
+        ${ this.key.js__value() }: ${ this.value.js__value() }
     `
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.array.js__output = function( ast ) {
-    return ast.body.js__output()
+asts.array.js__output = function() {
+    return this.body.js__output()
 }
 
-asts.array.js__value = function( ast ) {
-    if ( ast.body.is_inline() ) {
-        return `[ ${ ast.body.js__value() } ]`
+asts.array.js__value = function() {
+    if ( this.body.is_inline() ) {
+        return `[ ${ this.body.js__value() } ]`
     }
 }
 
-asts.inline_array.js__value = function( ast ) {
-    return `[ ${ ast.body.js__value() } ]`
+asts.inline_array.js__value = function() {
+    return `[ ${ this.body.js__value() } ]`
 }
 
-asts.inline_item.js__value = function( ast ) {
-    return ast.value.js__value()
+asts.inline_item.js__value = function() {
+    return this.value.js__value()
 }
 
 //  FIXME: Хочется иметь один push на все item'ы.
 //  Сейчас это невозможно сделать из-за текущей реализации шаблонов.
 //
-asts.inline_item.js__output = function( ast ) {
+asts.inline_item.js__output = function() {
     return `
-        r${ ast.rid }.push( ${ ast.value.js__value() } );
+        r${ this.rid }.push( ${ this.value.js__value() } );
     `
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.xml.js__output = function( ast ) {
+asts.xml.js__output = function() {
     return `
-        ${ ast.js__start() }
-        ${ ast.content.js__output() }
-        ${ ast.js__end() }
+        ${ this.js__start() }
+        ${ this.content.js__output() }
+        ${ this.js__end() }
     `
 }
 
-asts.xml.js__start = function( ast ) {
-    var is_const = ast.name.is_const();
-    var starts_with_attr = ast.content.starts_with_attr();
+asts.xml.js__start = function() {
+    var is_const = this.name.is_const();
+    var starts_with_attr = this.content.starts_with_attr();
 
     if ( is_const ) {
         if ( starts_with_attr !== false ) {
-            var name = ast.name.js__name();
+            var name = this.name.js__name();
 
             return `
-                r${ ast.rid } += '<${ name }';
+                r${ this.rid } += '<${ name }';
                 a%aid = attrs( '${ name }', {
-                    ${ ast.attrs.js__output() }
+                    ${ this.attrs.js__output() }
                 } );
             `
         }
 
         return `
-            r${ ast.rid } += ${ ast.js__static_name() };
+            r${ this.rid } += ${ this.js__static_name() };
         `
     }
 
     if ( starts_with_attr !== false ) {
-        var nid = ast.nid;
+        var nid = this.nid;
 
         return `
             var n${ nid } = to_tagname( %name:cast );
-            r${ ast.rid } += '<' + n${ nid };
-            a${ ast.aid } = attrs( n${ nid }, {
-                ${ ast.attrs.js__output() }
+            r${ this.rid } += '<' + n${ nid };
+            a${ this.aid } = attrs( n${ nid }, {
+                ${ this.attrs.js__output() }
             } );
         `
     }
 
     return `
-        var n${ ast.nid } = to_tagname( ${ ast.name.js__cast() } );
-        r${ ast.rid } += ${ ast.js__dynamic_name() };
+        var n${ this.nid } = to_tagname( ${ this.name.js__cast() } );
+        r${ this.rid } += ${ this.js__dynamic_name() };
     `
 }
 
-asts.xml.js__close_start_tag = function( ast ) {
-    return ( ast.is_empty_tag ) ? '/>' : '>'
+asts.xml.js__close_start_tag = function() {
+    return ( this.is_empty_tag ) ? '/>' : '>'
 }
 
-asts.xml.js__static_name = function( ast ) {
-    if ( ast.attrs.is_empty() ) {
+asts.xml.js__static_name = function() {
+    if ( this.attrs.is_empty() ) {
         return `
-            '<${ ast.name.js__name() }${ ast.js__close_start_tag() }'
+            '<${ this.name.js__name() }${ this.js__close_start_tag() }'
         `
     }
 
     return `
-        '<${ ast.name.js__name() }' + ${ ast.attrs.js__inline() } + '${ ast.js__close_start_tag() }'
+        '<${ this.name.js__name() }' + ${ this.attrs.js__inline() } + '${ this.js__close_start_tag() }'
     `
 }
 
-asts.xml.js__dynamic_name = function( ast ) {
-    var nid = ast.nid;
+asts.xml.js__dynamic_name = function() {
+    var nid = this.nid;
 
-    if ( ast.attrs.is_empty() ) {
+    if ( this.attrs.is_empty() ) {
         return `
             '<' + n${ nid } + ( is_empty_tag( n${ nid } ) ? '/>' : '>' )
         `
     }
 
     return `
-        '<' + n${ nid } + ${ ast.attrs.js__inline() } + ( is_empty_tag( n${ nid } ) ? '/>' : '>' )
+        '<' + n${ nid } + ${ this.attrs.js__inline() } + ( is_empty_tag( n${ nid } ) ? '/>' : '>' )
     `
 }
 
-asts.xml.js__end = function( ast ) {
-    if ( ast.name.is_const() ) {
-        if ( ast.is_empty_tag ) {
+asts.xml.js__end = function() {
+    if ( this.name.is_const() ) {
+        if ( this.is_empty_tag ) {
 
         } else {
             return `
-                r${ ast.rid } += '</${ ast.name.js__name() }>';
+                r${ this.rid } += '</${ this.name.js__name() }>';
             `
         }
     }
 
-    var nid = ast.nid;
+    var nid = this.nid;
 
     return `
         if ( !is_empty_tag( n${ nid } ) ) {
-            r${ ast.rid } += '</' + n${ nid } + '>';
+            r${ this.rid } += '</' + n${ nid } + '>';
         }
     `
 }
 
-asts.xml_attr.js__inline = function( ast ) {
-    if ( ast.value.get_type() === 'xml' ) {
+asts.xml_attr.js__inline = function() {
+    if ( this.value.get_type() === 'xml' ) {
         return `
-            " ${ ast.name }='" + xml_to_attrvalue( ${ ast.value.js__cast() } ) + "'"
+            " ${ this.name }='" + xml_to_attrvalue( ${ this.value.js__cast() } ) + "'"
         `
     }
 
     return `
-        " ${ ast.name }='" + string_to_attrvalue( ${ ast.value.js__cast() } ) + "'"
+        " ${ this.name }='" + string_to_attrvalue( ${ this.value.js__cast() } ) + "'"
     `
 }
 
-asts.xml_attr.js__output = function( ast ) {
-    if ( ast.value.get_type() === 'xml' ) {
+asts.xml_attr.js__output = function() {
+    if ( this.value.get_type() === 'xml' ) {
         //  FIXME: Тут, видимо, должно быть %value:cast?
         return `
-            '${ ast.name }': xml_attr( ${ ast.value.js__value() } )
+            '${ this.name }': xml_attr( ${ this.value.js__value() } )
         `
     }
 
     //  FIXME: Тут, видимо, должно быть %value:cast?
     return `
-        '${ ast.name }': string_attr( ${ ast.value.js__value() } )
+        '${ this.name }': string_attr( ${ this.value.js__value() } )
     `
 }
 
-asts.close_attrs.js__output = function( ast ) {
-    var rid = ast.rid;
+asts.close_attrs.js__output = function() {
+    var rid = this.rid;
 
     return `
         r${ rid } += a${ rid }.close();
@@ -875,63 +875,63 @@ asts.close_attrs.js__output = function( ast ) {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.attr.js__output = function( ast ) {
-    if ( ast.value.get_cast_type() === 'json' ) {
-        //  FIXME: Или тут нужно `ast.value.js__cast()`?
+asts.attr.js__output = function() {
+    if ( this.value.get_cast_type() === 'json' ) {
+        //  FIXME: Или тут нужно `this.value.js__cast()`?
         return `
-            a${ ast.rid }.set_xml( '${ ast.name.js__cast() }', JSON.stringify( ${ ast.value.js__value() } ) );
+            a${ this.rid }.set_xml( '${ this.name.js__cast() }', JSON.stringify( ${ this.value.js__value() } ) );
         `
     }
 
-    var type = ast.value.get_type();
-    var is_inline = ast.value.is_inline;
+    var type = this.value.get_type();
+    var is_inline = this.value.is_inline;
 
     if ( is_inline ) {
         if ( type === 'xml' ) {
-            if ( ast.op === '+=' ) {
+            if ( this.op === '+=' ) {
                 return `
-                    a${ ast.rid }.add_xml( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+                    a${ this.rid }.add_xml( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
                 `
             }
 
             return `
-                a${ ast.rid }.set_xml( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+                a${ this.rid }.set_xml( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
             `
         }
 
-        if ( ast.op === '+=' ) {
+        if ( this.op === '+=' ) {
             return `
-                a${ ast.rid }.add_string( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+                a${ this.rid }.add_string( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
             `
         }
 
         return `
-            a${ ast.rid }.set_string( '${ ast.name.js__cast() }', ${ ast.value.js__cast() } );
+            a${ this.rid }.set_string( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
         `
     }
 
     return `
-        ${ ast.value.js__prologue() }
-        ${ ast.value.js__output() }
-        ${ ast.js__epilogue() }
+        ${ this.value.js__prologue() }
+        ${ this.value.js__output() }
+        ${ this.js__epilogue() }
     `
 }
 
-asts.attr.js__epilogue = function( ast ) {
-    //  attr :epilogue [ ast.value.get_type() === 'attr' ]
+asts.attr.js__epilogue = function() {
+    //  attr :epilogue [ this.value.get_type() === 'attr' ]
     //      //  @%name: %value.get_type()
     //      var %.:var_name = a%{value.rid};
 
     return `
-        //  @${ ast.name }: ${ ast.value.get_type() }
-        a${ ast.rid }.set_string( '${ ast.name.js__cast() }', r${ ast.value.rid } );
+        //  @${ this.name }: ${ this.value.get_type() }
+        a${ this.rid }.set_string( '${ this.name.js__cast() }', r${ this.value.rid } );
     `
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.param_content.js__output = function( ast ) {
-    var rid = ast.rid;
+asts.param_content.js__output = function() {
+    var rid = this.rid;
 
     return `
         a${ rid }.merge( ca );
@@ -939,14 +939,14 @@ asts.param_content.js__output = function( ast ) {
     `
 }
 
-asts.param_content_attrs.js__output = function( ast ) {
+asts.param_content_attrs.js__output = function() {
     return `
-        a${ ast.rid }.merge( ca );
+        a${ this.rid }.merge( ca );
     `
 }
 
-asts.param_content_other.js__output = function( ast ) {
-    var rid = ast.rid;
+asts.param_content_other.js__output = function() {
+    var rid = this.rid;
 
     return `
         r${ rid } += a${ rid }.close() + cr;
@@ -955,8 +955,8 @@ asts.param_content_other.js__output = function( ast ) {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.ast.js__default_value = function( ast ) {
-    switch ( ast.get_cast_type() ) {
+asts.this.js__default_value = function() {
+    switch ( this.get_cast_type() ) {
         case 'number':
             return '0'
 
@@ -979,11 +979,11 @@ asts.ast.js__default_value = function( ast ) {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.inline_expr.js__cast = function( ast ) {
-    var from = ast.from;
-    var to = ast.to;
+asts.inline_expr.js__cast = function() {
+    var from = this.from;
+    var to = this.to;
 
-    var value = ast.value.js();
+    var value = this.value.js();
 
     if ( to === 'any' ) {
         return value
