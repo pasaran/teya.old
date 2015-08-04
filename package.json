@@ -18,7 +18,8 @@
         "nommon": "0.0.28"
     },
     "devDependencies": {
-        "babel": "5.8.9"
+        "babel": "5.8.9",
+        "lodash": "3.10.1"
     },
     "engines": {
         "node": "*"

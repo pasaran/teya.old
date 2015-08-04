@@ -1,15 +1,9 @@
 module.exports = function( asts ) {
 
 function items_method( method, sep ) {
-    var no_sep = !sep;
-
     sep = sep || '';
 
     return function() {
-        if ( no_sep ) {
-            console.log( 'NO SEP', this.id, method );
-        }
-
         var items = this.items;
         var l = items.length;
 
@@ -20,25 +14,25 @@ function items_method( method, sep ) {
         } else if ( l === 1 ) {
             r = items[ 0 ][ method ]();
 
-        } else if ( l === 2 ) {
-            r = items[ 0 ][ method ]() + sep + items[ 1 ][ method ]();
-
         } else {
             r = '';
+            var not_first = false;
             for ( var i = 0; i < l; i++ ) {
                 var item = items[ i ];
                 var result = item[ method ]();
 
-                if ( result ) {
-                    if ( i ) {
+                if ( result != null && result !== '' ) {
+                    if ( not_first ) {
                         r += sep;
+
+                    } else {
+                        not_first = true;
                     }
+
                     r += result;
                 }
             }
         }
-
-        //  console.log( 'ITEMS', this.id, l, r );
 
         return r;
     }
@@ -98,6 +92,8 @@ asts.module.js = function() {
     `
 }
 
+//  ---------------------------------------------------------------------------------------------------------------  //
+
 asts.module_vars.js__define = function() {
     if ( !this.is_empty() ) {
         return `var ${ this.js__list() };`
@@ -107,17 +103,22 @@ asts.module_vars.js__define = function() {
 }
 
 asts.module_vars.js__list = items_method( 'js__list', ', ' );
+asts.module_vars.js__init = items_method( 'js__init', '\n' );
+asts.module_vars.js__def = items_method( 'js__def', '\n' );
+asts.module_vars.js__export = items_method( 'js__export', '\n' );
+
+//  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.module_templates.js = items_method( 'js', '\n' );
+
+//  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.module_imports.js = items_method( 'js', '\n' );
 asts.module_imports.js__init = items_method( 'js__init', '\n' );
 
-asts.module_funcs.js__define = items_method( 'js__define', '\n' );
+//  ---------------------------------------------------------------------------------------------------------------  //
 
-asts.module_vars.js__init = items_method( 'js__init', '\n' );
-asts.module_vars.js__def = items_method( 'js__def', '\n' );
-asts.module_vars.js__export = items_method( 'js__export', '\n' );
+asts.module_funcs.js__define = items_method( 'js__define', '\n' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -175,7 +176,7 @@ asts.def_template.js = function() {
 }
 
 asts.def_template.js__template_name = function() {
-    return `t${ this.tid }_${ this.normalize_name() }`
+    return `t_${ this.normalize_name() }`
 }
 
 //  def_template :func_args [ this.get_type() === 'pair' || this.get_type() === 'item' ]
@@ -225,6 +226,7 @@ asts.def_arg.js__default = function() {
         `
     }
 
+    return ''
     //  if ( %.:var_name == null ) { %.:var_name = %.:default_value; }
 }
 
@@ -293,13 +295,16 @@ asts.def_var.js__init = function() {
 
 asts.def_func.js__define = function() {
     if ( this.is_user ) {
-        if ( this.body.is_inline() ) {
+        var body = this.body;
+        var args = this.args;
+
+        if ( body.is_inline() ) {
             //  FIXME: Возможно, тут должно быть body:cthis.
             return `
                 //  ${ this.get_full_name() } : ${ this.get_type() }
-                function ${ this.js__func_name() }( xr, x0, a0${ this.args.js__func_arg() } ) {
-                    ${ this.args.js__default() }
-                    return ${ this.body.js__value() };
+                function ${ this.js__func_name() }( xr, x0, a0${ args.js__func_arg() } ) {
+                    ${ args.js__default() }
+                    return ${ body.js__value() };
                 }
             `
         }
@@ -307,9 +312,9 @@ asts.def_func.js__define = function() {
         return `
             //  ${ this.get_full_name() } : ${ this.get_type() }
             function ${ this.js__func_name() }( xr, x0, a0${ args.js__func_arg() } ) {
-                ${ this.args.js__default() }
+                ${ args.js__default() }
                 ${ this.js__func_prologue() }
-                ${ this.body.js__output() }
+                ${ body.js__output() }
                 ${ this.js__func_epilogue() }
             }
         `
@@ -404,6 +409,7 @@ asts.block.js__output = function() {
 asts.block_defs.js__def = items_method( 'js__def', '\n' );
 asts.block_exprs.js__output = items_method( 'js__output', '\n' );
 asts.block_exprs.js__value = items_method( 'js__value' );
+asts.block_exprs.js__cast = items_method( 'js__cast' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -419,7 +425,7 @@ asts.if.js__value = function() {
             return `( ${ this.condition.js__value() } ) ? ${ this.then.exprs.js__cast() } : ${ this.js__default_value() }`
         }
 
-        return `( ${ this.condition.js__value() } ) ? ${ this.then.exprs.js__cast() } : ${ this.elses.js__case() }`
+        return `( ${ this.condition.js__value() } ) ? ${ this.then.exprs.js__cast() } : ${ this.elses.js__cast() }`
     }
 }
 
@@ -444,6 +450,9 @@ asts.block.js__if_body = function() {
         }
     `
 }
+
+asts.elses.js__if_body = items_method( 'js__if_body', ' ' );
+asts.elses.js__cast = items_method( 'js__cast' );
 
 asts.else_if.js__if_body = function() {
     return `
@@ -512,7 +521,7 @@ asts.value.js__output = function() {
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.template.js__name = function() {
-    return `t${ this.def.tid }_${ this.normalize_name() }`
+    return `t_${ this.normalize_name() }`
 }
 
 asts.template.js__output = function() {
@@ -558,17 +567,24 @@ asts.template.js__context = function() {
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
+asts.template_params.js__template_param_def = items_method( 'js__template_param_def', ', ' );
+asts.template_params.js__template_param_value = items_method( 'js__template_param_value', '' );
+
+//  FIXME: А почему тут не asts.template_param?
+//
 asts.ast.js__template_param_def = function() {
     var value = this.value;
 
     if ( value && !this.is_inline() ) {
         return `
-            //  ${ value.get_type() }
+            //  ${ this.name }: ${ value.get_type() }
             ${ value.js__prologue() }
             ${ value.js__output() }
             ${ this.js__template_param_epilogue() }
         `
     }
+
+    return ''
 }
 
 asts.ast.js__template_param_epilogue = function() {
@@ -626,7 +642,7 @@ asts.jpath.js__value = function() {
         return `x${ this.xid }`
     }
 
-    return `no.jpath( '${ this.teya() }', x${ xid } )`
+    return `no.jpath( '${ this.teya() }', x${ this.xid } )`
 }
 
 //  ---------------------------------------------------------------------------------------------------------------  //
@@ -658,7 +674,7 @@ asts.inline_subexpr.js__value = function() {
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.string_content.js__name = items_method( 'js__name' );
-asts.string_content.js__cast = items_method( 'js__cast' );
+asts.string_content.js__cast = items_method( 'js__cast', ' + ' );
 
 asts.inline_string.js__cast = function() {
     return this.value.js__cast()
@@ -719,6 +735,11 @@ asts.inline_func.js__func_name = function() {
     return `f_${ def.normalize_name() }_${ def.fid }`
 }
 
+//  ---------------------------------------------------------------------------------------------------------------  //
+
+asts.inline_func_args.js = items_method( 'js', ', ' );
+
+
 asts.inline_func_arg.js = function() {
     return this.value.js__cast()
 }
@@ -753,12 +774,14 @@ asts.object.js__output = function() {
 
 asts.object.js__value = function() {
     if ( this.body.is_inline() ) {
-        return `[ ${ this.body.js__value() } ]`
+        return `{ ${ this.body.js__value() } }`
     }
+
+    return ''
 }
 
 asts.inline_object.js__value = function() {
-    return `[ ${ this.body.js__value() } ]`
+    return `{ ${ this.body.js__value() } }`
 }
 
 asts.inline_pair.js__output = function() {
@@ -767,6 +790,8 @@ asts.inline_pair.js__output = function() {
             r${ this.rid }[ ${ this.key.js__value() } ] = ${ this.value.js__value() };
         `
     }
+
+    return ''
 }
 
 asts.pair.js__output = function() {
@@ -788,6 +813,9 @@ asts.inline_pair.js__value = function() {
         ${ this.key.js__value() }: ${ this.value.js__value() }
     `
 }
+
+asts.inline_pairs.js__value = items_method( 'js__value', ', ' );
+asts.inline_pairs.js__output = items_method( 'js__output', '\n' );
 
 //  ---------------------------------------------------------------------------------------------------------------  //
 
@@ -818,6 +846,9 @@ asts.inline_item.js__output = function() {
     `
 }
 
+asts.inline_items.js__value = items_method( 'js__value', ', ' );
+asts.inline_items.js__output = items_method( 'js__output', '\n' );
+
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.xml.js__output = function() {
@@ -838,7 +869,7 @@ asts.xml.js__start = function() {
 
             return `
                 r${ this.rid } += '<${ name }';
-                a%aid = attrs( '${ name }', {
+                a${ this.aid } = attrs( '${ name }', {
                     ${ this.attrs.js__output() }
                 } );
             `
@@ -853,7 +884,7 @@ asts.xml.js__start = function() {
         var nid = this.nid;
 
         return `
-            var n${ nid } = to_tagname( %name:cast );
+            var n${ nid } = to_tagname( ${ this.name.js__cast() } );
             r${ this.rid } += '<' + n${ nid };
             a${ this.aid } = attrs( n${ nid }, {
                 ${ this.attrs.js__output() }
@@ -900,6 +931,7 @@ asts.xml.js__dynamic_name = function() {
 asts.xml.js__end = function() {
     if ( this.name.is_const() ) {
         if ( this.is_empty_tag ) {
+            return ''
 
         } else {
             return `
@@ -916,6 +948,9 @@ asts.xml.js__end = function() {
         }
     `
 }
+
+asts.xml_attrs.js__inline = items_method( 'js__inline', ' + ' );
+asts.xml_attrs.js__output = items_method( 'js__output', ',\n' );
 
 asts.xml_attr.js__inline = function() {
     if ( this.value.get_type() === 'xml' ) {
@@ -957,7 +992,7 @@ asts.attr.js__output = function() {
     if ( this.value.get_cast_type() === 'json' ) {
         //  FIXME: Или тут нужно `this.value.js__cast()`?
         return `
-            a${ this.rid }.set_xml( '${ this.name.js__cast() }', JSON.stringify( ${ this.value.js__value() } ) );
+            a${ this.rid }.set_xml( '${ this.name }', JSON.stringify( ${ this.value.js__value() } ) );
         `
     }
 
@@ -968,23 +1003,23 @@ asts.attr.js__output = function() {
         if ( type === 'xml' ) {
             if ( this.op === '+=' ) {
                 return `
-                    a${ this.rid }.add_xml( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
+                    a${ this.rid }.add_xml( '${ this.name }', ${ this.value.js__cast() } );
                 `
             }
 
             return `
-                a${ this.rid }.set_xml( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
+                a${ this.rid }.set_xml( '${ this.name }', ${ this.value.js__cast() } );
             `
         }
 
         if ( this.op === '+=' ) {
             return `
-                a${ this.rid }.add_string( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
+                a${ this.rid }.add_string( '${ this.name }', ${ this.value.js__cast() } );
             `
         }
 
         return `
-            a${ this.rid }.set_string( '${ this.name.js__cast() }', ${ this.value.js__cast() } );
+            a${ this.rid }.set_string( '${ this.name }', ${ this.value.js__cast() } );
         `
     }
 
@@ -1058,10 +1093,10 @@ asts.ast.js__default_value = function() {
 //  ---------------------------------------------------------------------------------------------------------------  //
 
 asts.inline_expr.js__cast = function() {
-    var from = this.from;
-    var to = this.to;
+    var from = this.from_type;
+    var to = this.to_type;
 
-    var value = this.value.js();
+    var value = this.js__value();
 
     if ( to === 'any' ) {
         return value

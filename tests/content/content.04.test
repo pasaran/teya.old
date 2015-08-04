@@ -1,4 +1,4 @@
 {
-    result: '<ul><li class="item">First</li><li class="item">Second</li></ul>'
+    result: "<ul><li class='item'>First</li><li class='item'>Second</li></ul>"
 }
 

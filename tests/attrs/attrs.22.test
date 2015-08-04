@@ -1,4 +1,4 @@
 {
-    result: '<div class="hello goodbye"></div>'
+    result: "<div class='hello goodbye'></div>"
 }
 

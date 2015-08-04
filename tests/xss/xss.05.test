@@ -3,7 +3,7 @@
         data: {
             class: '"><"'
         },
-        result: '<div class="&quot;&gt;&lt;&quot;">Hello</div>'
+        result: '<div class=\'"&gt;&lt;"\'>Hello</div>'
     }
 ]
 

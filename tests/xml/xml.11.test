@@ -3,13 +3,13 @@
         data: {
             name: 'img'
         },
-        result: '<img class="hello"/>Hello'
+        result: "<img class='hello'/>Hello"
     },
     {
         data: {
             name: 'div'
         },
-        result: '<div class="hello">Hello</div>'
+        result: "<div class='hello'>Hello</div>"
     }
 ]
 

@@ -1,5 +1,5 @@
 {
-    result: '<ul><li id="first">First</li></ul>',
+    result: "<ul><li id='first'>First</li></ul>",
     known: true
 }
 

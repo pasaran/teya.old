@@ -1,5 +1,5 @@
 {
     data: 'attrs.16.data',
-    result: '<div class="one">FirstSecondThird</div>'
+    result: "<div class='one'>FirstSecondThird</div>"
 }
 

@@ -1,3 +1,3 @@
 {
-    result: '<div class="hello">Hello</div>'
+    result: "<div class='hello'>Hello</div>"
 }

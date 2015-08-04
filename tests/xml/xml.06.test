@@ -1,4 +1,4 @@
 {
-    result: '<img src="foo.png"/>Hello'
+    result: "<img src='foo.png'/>Hello"
 }
 

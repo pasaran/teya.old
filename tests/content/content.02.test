@@ -1,4 +1,4 @@
 {
-    result: '<h1 class="header">Hello</h1>'
+    result: "<h1 class='header'>Hello</h1>"
 }
 

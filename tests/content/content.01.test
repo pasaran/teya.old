@@ -1,5 +1,5 @@
 {
     data: 'content.01.data',
-    result: '<ul class="list list__vertical"><li class="item" id="1">First</li><li class="item selected" id="2">Second</li><li class="item" id="3">Third</li></ul>'
+    result: "<ul class='list list__vertical'><li class='item' id='1'>First</li><li class='item selected' id='2'>Second</li><li class='item' id='3'>Third</li></ul>"
 }
 
